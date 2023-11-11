@@ -9,6 +9,8 @@
 * can change the delivery address
 * can apply filters to search for products (according to price or brand)
 * can see customer reviews
+* can add products to the wishlist
+* can add reviews
 
 ### Administrator
 * can create an administrator account
