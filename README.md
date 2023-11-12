@@ -337,6 +337,7 @@ La fiecare aplicare a cremei, tenul dvs. primește hidratare, protecție solară
 * Producator: Clinique
 * Descriere:
 * Compozitie/ Ingrediente:
+  
 #### 29. Garnier Skin Naturals Vitamin C
 * Categorie: Skin care
 * Subcategorie: Seturi de ingrijire
@@ -447,6 +448,9 @@ NOTE DE VARF: Piper roz, Trandafir, Patchouli.
 ALCOHOL, PARFUM (FRAGRANCE), AQUA (WATER), LIMONENE, ETHYLHEXYL METHOXYCINNAMATE, ALPHA-ISOMETHYL IONONE, BENZYL SALICYLATE, BHT, ETHYLHEXYL SALICYLATE, BUTYL METHOXYDIBENZOYLMETHANE, HYDROXYCITRONELLAL, COUMARIN, LINALOOL, CITRONELLOL, GERANIOL, EUGENOL, BENZYL ALCOHOL, FARNESOL, CITRAL, BENZYL BENZOATE, ISOEUGENOL, DISODIUM EDTA.
 
 
+### Popularea tabelelor:
+
+### Relatii intre tabele:
 
 
 
