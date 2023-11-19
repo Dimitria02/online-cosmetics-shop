@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Cosmetics Management{% endblock %}
+{% block content %}
+{% load static %}
+<div class="container">
+    <!-- HERO SECTION-->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="row px-4 px-lg-5 py-lg-4 align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="h2 text-uppercase mb-0">Management page cosmetics shop</h1>
+                </div>
+                <div class="col-lg-6 text-lg-end">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb justify-content-lg-end mb-0 px-0 bg-light">
+                            <li class="breadcrumb-item">
+                                <a class="text-dark" href="{% url 'home' %}">Home</a>
+                            </li>
+                            <li class="breadcrumb-item active" aria-current="page">Management</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-5">
+        <header class="text-center">
+            <p class="small text-muted small text-uppercase mb-1">You can administrate following pages</p>
+        </header>
+        <div class="row">
+
+            <div class="col-xl-4 col-lg-4 col-sm-6">
+                <div class="product text-center">
+                    <div class="position-relative mb-3">
+                        <div class="badge text-white bg-"></div>
+                        <a class="d-block" href="{% url 'manage_category' %}">
+                            <img class="img-fluid w-100" src="{% static 'img/category-1.jpg' %}" alt="...">
+                        </a>
+                    </div>
+                    <h6> <a class="reset-anchor" href="{% url 'manage_category' %}">Category</a></h6>
+                </div>
+            </div>
+
+            <div class="col-xl-4 col-lg-4 col-sm-6">
+                <div class="product text-center">
+                    <div class="position-relative mb-3">
+                        <div class="badge text-white bg-"></div>
+                        <a class="d-block" href="{% url 'manage_manufacturer' %}">
+                            <img class="img-fluid w-100" src="{% static 'img/category-3.jpg' %}" alt="...">
+                        </a>
+                    </div>
+                    <h6> <a class="reset-anchor" href="{% url 'manage_manufacturer' %}">Manufacturer</a></h6>
+                </div>
+            </div>
+
+            <div class="col-xl-4 col-lg-4 col-sm-6">
+                <div class="product text-center">
+                    <div class="position-relative mb-3">
+                        <div class="badge text-white bg-"></div>
+                        <a class="d-block" href="{% url 'manage_product' %}">
+                            <img class="img-fluid w-100" src="{% static 'img/category-3.jpg' %}" alt="...">
+                        </a>
+                    </div>
+                    <h6> <a class="reset-anchor" href="{% url 'manage_product' %}">Product</a></h6>
+                </div>
+            </div>
+
+        </div>
+
+    </section>
+</div>
+{% endblock %}

@@ -1,13 +1,15 @@
 from django.db import models
 from django.core.validators import MinValueValidator
+from django.contrib.auth.models import AbstractUser
 
 
 class Category(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=200, null=False, unique=True)
+    icon = models.ImageField(blank=True, upload_to='category')
 
     def __str__(self):
-        return 'Category : {} with id : {}'.format(self.name, self.id)
+        return '{}'.format(self.name)
 
 
 class Manufacturer(models.Model):
@@ -15,33 +17,32 @@ class Manufacturer(models.Model):
     name = models.CharField(max_length=200, null=False)
 
     def __str__(self):
-        return 'Manufacturer : {} with id : {}'.format(self.name, self.id)
+        return '{}'.format(self.name)
 
 
 class Product(models.Model):
     id = models.IntegerField(primary_key=True, auto_created=True)
-    name = models.CharField(max_length=200, null=False, blank=False)
+    name = models.CharField(max_length=200, null=False, blank=False, unique=True)
     description = models.CharField(max_length=200, blank=True)
     price = models.FloatField(max_length=3, validators=[MinValueValidator(0.0)])
     quantity = models.IntegerField(validators=[MinValueValidator(0)])
-    category_id = models.ForeignKey(Category, on_delete=models.CASCADE)
-    manufacturer_id = models.ForeignKey(Manufacturer, on_delete=models.CASCADE)
+    icon = models.ImageField(blank=True, upload_to='product')
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    manufacturer = models.ForeignKey(Manufacturer, on_delete=models.CASCADE)
 
     def __str__(self):
         return 'Product : {} with id : {}'.format(self.name, self.id)
 
 
-class Client(models.Model):
-    id = models.IntegerField(primary_key=True, auto_created=True)
+class Client(AbstractUser):
     first_name = models.CharField(max_length=200, null=False)
     last_name = models.CharField(max_length=200, null=False)
     address = models.CharField(max_length=300, null=False)
     phone_number = models.CharField(max_length=15, unique=True)
-    email = models.CharField(max_length=200, unique=True, null=False)
-    password = models.CharField(max_length=100, null=False)  # to be reviewed
+    email = models.EmailField(unique=True)
 
     def __str__(self):
-        return 'Client : {} {} with id : {}'.format(self.first_name, self.last_name, self.id)
+        return self.username
 
 
 class Order(models.Model):

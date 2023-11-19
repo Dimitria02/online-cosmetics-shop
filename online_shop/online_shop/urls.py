@@ -18,11 +18,29 @@ from django.contrib import admin
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
-from cosmetics import views
+from django.contrib.auth import views as auth
+from client import views as client_views
+from cosmetics import views as cosmetics_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.home, name='home'),
+    path('', cosmetics_views.home, name='home'),
+    path('login/', client_views.client_login, name='client_login'),
+    path('logout/', auth.LogoutView.as_view(template_name='cosmetics/home.html'), name='logout'),
+    path('signup/', client_views.client_signup, name='client_signup'),
+    path('categories', cosmetics_views.categories, name='categories'),
+    path('management/', cosmetics_views.management, name='management'),
+    path('management/category', cosmetics_views.manage_category, name='manage_category'),
+    path('management/category/delete/<int:id>', cosmetics_views.delete_category, name='delete_category'),
+    path('management/category/edit/<int:id>', cosmetics_views.update_category, name='update_category'),
+    path('management/product', cosmetics_views.manage_product, name='manage_product'),
+    path('management/product/delete/<int:id>', cosmetics_views.delete_product, name='delete_product'),
+    path('management/product/edit/<int:id>', cosmetics_views.update_product, name='update_product'),
+    path('management/manufacturer', cosmetics_views.manage_manufacturer, name='manage_manufacturer'),
+    path('management/manufacturer/delete/<int:id>', cosmetics_views.delete_manufacturer, name='delete_manufacturer'),
+    path('management/manufacturer/edit/<int:id>', cosmetics_views.update_manufacturer, name='update_manufacturer'),
+    path('product/<int:id>', cosmetics_views.product_detail, name='product_detail'),
 ]
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

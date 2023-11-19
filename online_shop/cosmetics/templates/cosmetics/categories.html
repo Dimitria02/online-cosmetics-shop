@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+{% block title %}Explore Category{% endblock %}
+{% block content %}
+{% load static %}
+{% for product in products %}
+    <div class="modal fade" id="productView-{{ product.id }}" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content overflow-hidden border-0">
+                <button class="btn-close p-4 position-absolute top-0 end-0 z-index-20 shadow-0" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-body p-0">
+                    <div class="row align-items-stretch">
+                        <div class="col-lg-6 p-lg-0">
+                            <a class="glightbox product-view d-block h-100 bg-cover bg-center" style="background: url({{ MEDIA_URL }}/{{ product.icon }})" href="{{ MEDIA_URL }}{{ product.icon }}" data-gallery="gallery-{{ product.id }}" data-glightbox="{{ product.name }}"></a>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="p-4 my-md-4">
+                                <h2 class="h4">{{ product.name }}</h2>
+                                <p class="text-muted">{{ product.price }} RON</p>
+                                <p class="text-sm mb-4">{{ product.description }}</p>
+                                <div class="row align-items-stretch mb-4 gx-0">
+                                    <div class="col-sm-7">
+                                        <div class="border d-flex align-items-center justify-content-between py-1 px-3">
+                                            <span class="small text-uppercase text-gray mr-4 no-select">Quantity</span>
+                                            <div class="quantity">
+                                                <button class="dec-btn p-0">
+                                                    <i class="fas fa-caret-left"></i>
+                                                </button>
+                                                <input class="form-control border-0 shadow-0 p-0" type="text" value="1">
+                                                <button class="inc-btn p-0">
+                                                    <i class="fas fa-caret-right"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-5">
+                                        <a class="btn btn-dark btn-sm w-100 h-100 d-flex align-items-center justify-content-center px-0" href="{% url 'product_detail'  product.id %}">Add to cart</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+<div class="container">
+    <!-- HERO SECTION-->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="row px-4 px-lg-5 py-lg-4 align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="h2 text-uppercase mb-0">Explore cosmectics shop</h1>
+                </div>
+                <div class="col-lg-6 text-lg-end">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb justify-content-lg-end mb-0 px-0 bg-light">
+                            <li class="breadcrumb-item">
+                                <a class="text-dark" href="{% url 'home' %}">Home</a>
+                            </li>
+                            <li class="breadcrumb-item active" aria-current="page">Category</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="py-5">
+        <div class="container p-0">
+            <div class="row">
+                <!-- SHOP SIDEBAR-->
+                <div class="col-lg-3 order-2 order-lg-1">
+                    <h5 class="text-uppercase mb-4">Categories</h5>
+                    {% for category in categories %}
+                        <div class="py-2 px-4 bg-dark text-white mb-3">
+                            <strong class="small text-uppercase fw-bold">{{ category.name }}</strong>
+                        </div>
+                    {% endfor %}
+                    <ul class="list-unstyled small text-muted ps-lg-4 font-weight-normal">
+                        <li class="mb-2">
+                            <a class="reset-anchor" href="#!">Women's T-Shirts</a>
+                        </li>
+                    </ul>
+                    <h6 class="text-uppercase mb-4">Price range</h6>
+                    <div class="price-range pt-4 mb-5">
+                        <div id="range"></div>
+                        <div class="row pt-2">
+                            <div class="col-6">
+                                <strong class="small fw-bold text-uppercase">From</strong>
+                            </div>
+                            <div class="col-6 text-end">
+                                <strong class="small fw-bold text-uppercase">To</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <h6 class="text-uppercase mb-3">Filters</h6>
+                    <div class="form-check mb-1">
+                        <input class="form-check-input" type="checkbox" id="checkbox_1">
+                        <label class="form-check-label" for="checkbox_1">Returns Accepted</label>
+                    </div>
+                    <div class="form-check mb-1">
+                        <input class="form-check-input" type="checkbox" id="checkbox_2">
+                        <label class="form-check-label" for="checkbox_2">Returns Accepted</label>
+                    </div>
+                </div>
+                <!-- SHOP LISTING-->
+                <div class="col-lg-9 order-1 order-lg-2 mb-5 mb-lg-0">
+                    <div class="row mb-3 align-items-center">
+                        <div class="col-lg-6 mb-2 mb-lg-0">
+                            <p class="text-sm text-muted mb-0">Showing {{ products.count }} results</p>
+                        </div>
+                        <div class="col-lg-6">
+                            <ul class="list-inline d-flex align-items-center justify-content-lg-end mb-0">
+                                <li class="list-inline-item text-muted me-3">
+                                    <a class="reset-anchor p-0" href="#!">
+                                        <i class="fas fa-th-large"></i>
+                                    </a>
+                                </li>
+                                <li class="list-inline-item text-muted me-3">
+                                    <a class="reset-anchor p-0" href="#!">
+                                        <i class="fas fa-th"></i>
+                                    </a>
+                                </li>
+                                <li class="list-inline-item">
+                                    <select class="selectpicker" data-customclass="form-control form-control-sm">
+                                        <option value>Sort By</option>
+                                        <option value="low-high">Price: Low to High </option>
+                                        <option value="high-low">Price: High to Low </option>
+                                    </select>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <!-- PRODUCT-->
+                    <div class="row">
+                        {% for product in products %}
+                        <div class="col-lg-4 col-sm-6">
+                            <div class="product text-center">
+                                <div class="mb-3 position-relative">
+                                    <div class="badge text-white bg-"></div>
+                                    <a class="d-block" href="{% url 'product_detail'  product.id %}">
+                                        <img class="img-fluid w-100" src="{% static '../media' %}/{{ product.icon }}" alt="...">
+                                    </a>
+                                    <div class="product-overlay">
+                                        <ul class="mb-0 list-inline">
+                                            <li class="list-inline-item m-0 p-0">
+                                                <a class="btn btn-sm btn-dark" href="{% url 'product_detail'  product.id %}">Add to cart</a>
+                                            </li>
+                                            <li class="list-inline-item mr-0">
+                                                <a class="btn btn-sm btn-outline-dark" href="#productView-{{ product.id }}" data-bs-toggle="modal">
+                                                    <i class="fas fa-expand"></i>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <h6>
+                                    <a class="reset-anchor" href="{% url 'product_detail'  product.id %}">{{product.name}}</a>
+                                </h6>
+                                <p class="small text-muted">{{product.price}} RON</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <!-- END PRODUCT -->
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+<script>
+    var range = document.getElementById('range');
+    noUiSlider.create(range, {
+        range: {
+            'min': 0,
+            'max': 2000
+        },
+        step: 5,
+        start: [100, 500],
+        margin: 300,
+        connect: true,
+        direction: 'ltr',
+        orientation: 'horizontal',
+        behaviour: 'tap-drag',
+        tooltips: true,
+        format: {
+            to: function(value) {
+                return value + ' RON';
+            },
+            from: function(value) {
+                return value.replace('', '');
+            }
+        }
+    });
+</script>
+{% endblock %}

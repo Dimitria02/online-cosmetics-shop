@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Sign Up{% endblock %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block content %}
+<section class="pt-5">
+	<header class="text-center">
+		<h3 class="h3 text-uppercase mb-4">Sign Up</h3>
+	</header>
+	<div>
+		<form method="post" class="container col-md-4">
+			{% csrf_token %}
+			<fieldset class="form-group">
+				{{ client_form|crispy }}
+			</fieldset>
+			<div class="text-center">
+				<button type="submit">Sign Up</button>
+			</div>
+		</form>
+	</div>
+	<div class="text-center">
+		<b><a class="category-item" href="{% url 'client_login' %}">Already have an account?</a></b>
+	</div>
+</section>
+{% endblock %}
