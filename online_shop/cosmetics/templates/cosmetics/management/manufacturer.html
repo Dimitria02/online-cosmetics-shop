@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}Manufacturer Management{% endblock %}
+{% load crispy_forms_tags %}
+{% block content %}
+{% load static %}
+<div class="container">
+
+    <!-- TOP SECTION-->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="row px-4 px-lg-5 py-lg-4 align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="h2 text-uppercase mb-0">Management page cosmetics shop</h1>
+                </div>
+                <div class="col-lg-6 text-lg-end">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb justify-content-lg-end mb-0 px-0 bg-light">
+                            <li class="breadcrumb-item">
+                                <a class="text-dark" href="{% url 'home' %}">Home</a>
+                            </li>
+                            <li class="breadcrumb-item">
+                                <a class="text-dark" href="{% url 'management' %}">Management</a>
+                            </li>
+                            <li class="breadcrumb-item active" aria-current="page">
+                                <a href="{% url 'manage_manufacturer' %}">Manufacturer</a>
+                            </li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- End of TOP SECTION-->
+
+    <section class="py-5">
+        <header class="text-center">
+            <p class="small text-muted small text-uppercase mb-1">Currently following manufacturers are created</p>
+        </header>
+        <div class="container">
+            <table class="table table-lg" cellspacing="0" width="100%">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Manufacturer Name</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for manufacturer in manufacturers %}
+                        <tr>
+                            <th scope="row">{{ forloop.counter }}</th>
+                            <td>{{ manufacturer.name }}</td>
+                            <td>
+                                <a class="btn btn-warning" role="button" href="{% url 'update_manufacturer'  manufacturer.id %}">Edit</a>
+                                <a class="btn btn-danger" role="button" data-bs-toggle="modal" data-bs-target="#delete-item-modal-{{ manufacturer.id }}" id="delete-item-{{ manufacturer.id }}">Delete</a>
+                            </td>
+                        </tr>
+
+                        <!-- Start of modal section for delete items -->
+                        <div class="modal fade" id="delete-item-modal-{{ manufacturer.id }}">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Confirmation</h5>
+                                        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>Are you really sure you want to remove this manufacturer?</p>
+                                        <p style="font-weight: bold;">{{ manufacturer.name }}</p>
+                                    </div>
+                                    <div class="modal-footer justify-content-between">
+                                        <a class="btn btn-danger" role="button" href="{% url 'delete_manufacturer'  manufacturer.id %}" id="confirm-delete-item-button">Delete</a>
+                                        <button type="button" class="btn btn-secondary mr-1" data-bs-dismiss="modal">Cancel</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- End of modal section for delete items -->
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="py-5">
+        <header class="text-center">
+            <p class="small text-muted small text-uppercase mb-1">You can add or update a manufacturer using this form</p>
+        </header>
+        <div class="container" id="add_manufacturer">
+            <form class="form-horizontal form-material" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {% crispy manufacturer_form %}
+                <div class="form-group">
+                    <div class="col-sm-12">
+                        <button type="submit" class="btn btn-success">Send</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
+</div>
+
+<script>
+    $(document).on('click', '#delete-item', () => {
+        document.getElementById("confirm-delete-item-button").action = document.querySelector('#delete-item').href
+    });
+</script>
+{% endblock %}

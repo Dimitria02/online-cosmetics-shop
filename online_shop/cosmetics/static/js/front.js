@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function () {
 	});
 
 	/* ===============================================================
-         PRODUCT QUNATITY
+         PRODUCT QUANTITY
       =============================================================== */
 	document.querySelectorAll('.dec-btn').forEach((el) => {
 		el.addEventListener('click', () => {
