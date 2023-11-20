@@ -84,6 +84,7 @@
                 </div>
             </header>
             <!-- end of navbar -->
+            {% include 'cosmetics/messages.html' %}
             {% block content %}
             {% endblock %}
             <!-- Footer section -->
@@ -100,9 +101,6 @@
                                     <a class="footer-link" href="#!">Returns &amp; Refunds</a>
                                 </li>
                                 <li>
-                                    <a class="footer-link" href="#!">Online Stores</a>
-                                </li>
-                                <li>
                                     <a class="footer-link" href="#!">Terms &amp; Conditions</a>
                                 </li>
                             </ul>
@@ -117,27 +115,7 @@
                                     <a class="footer-link" href="#!">Available Services</a>
                                 </li>
                                 <li>
-                                    <a class="footer-link" href="#!">Latest Posts</a>
-                                </li>
-                                <li>
                                     <a class="footer-link" href="#!">FAQs</a>
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="col-md-4">
-                            <h6 class="text-uppercase mb-3">Social media</h6>
-                            <ul class="list-unstyled mb-0">
-                                <li>
-                                    <a class="footer-link" href="#!">Twitter</a>
-                                </li>
-                                <li>
-                                    <a class="footer-link" href="#!">Instagram</a>
-                                </li>
-                                <li>
-                                    <a class="footer-link" href="#!">Tumblr</a>
-                                </li>
-                                <li>
-                                    <a class="footer-link" href="#!">Pinterest</a>
                                 </li>
                             </ul>
                         </div>
@@ -145,9 +123,12 @@
                     <div class="border-top pt-4" style="border-color: #1d1d1d !important">
                         <div class="row">
                             <div class="col-md-6 text-center text-md-start">
-                                <p class="small text-muted mb-0"> &copy; <script>
-                                        new Date().getFullYear() > 2023 && document.write("- " + new Date().getFullYear());
-                                    </script> All rights reserved. </p>
+                                <p class="small text-muted mb-0"> &copy; 2023
+                                    <script>
+                                        new Date().getFullYear() >= 2023 && document.write("- " + new Date().getFullYear());
+                                    </script>
+                                    All rights reserved.
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -155,6 +136,7 @@
             </footer>
             <!-- End of footer section -->
             <!-- JavaScript files-->
+            <script src="{% static 'vendor/jquery/dist/jquery.min.js' %}"></script>
             <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
             <script src="{% static 'vendor/glightbox/js/glightbox.min.js' %}"></script>
             <script src="{% static 'vendor/nouislider/nouislider.min.js' %}"></script>
@@ -183,6 +165,13 @@
                 // while using file:// protocol
                 // pls don't forget to change to your domain :)
                 injectSvgSprite('https://bootstraptemple.com/files/icons/orion-svg-sprite.svg');
+            </script>
+            <script>
+                setTimeout(function(){
+                    if ($('#msg').length > 0) {
+                        $('#msg').remove();
+                    }
+                }, 5000);
             </script>
             <!-- FontAwesome CSS - loading as last, so it doesn't block rendering-->
             <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">

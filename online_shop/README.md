@@ -1,5 +1,5 @@
 # Cosmetics shop project
-## Techinal aspects
+## Technical aspects
 * TBD
 
 ## TODO List

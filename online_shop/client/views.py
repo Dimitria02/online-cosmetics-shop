@@ -26,7 +26,7 @@ def client_signup(request):
     context = {
         'client_form': client_form
     }
-    return render(request, 'user/signup.html', context)
+    return render(request, 'client/signup.html', context)
 
 
 def client_login(request):
@@ -44,4 +44,4 @@ def client_login(request):
     context = {
         'client_form': AuthenticationForm()
     }
-    return render(request, 'user/login.html', context)
+    return render(request, 'client/login.html', context)
