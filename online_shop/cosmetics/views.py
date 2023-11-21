@@ -7,15 +7,15 @@ from .forms import CategoryForm, ManufacturerForm, ProductForm
 
 def home(request):
     context = {
-        'categories': Category.objects.all()
+        'categories': Category.objects.raw("SELECT * FROM cosmetics_category")
     }
     return render(request, "cosmetics/home.html", context)
 
 
 def categories(request):
     context = {
-        'categories': Category.objects.values(),
-        'products': Product.objects.values(),
+        'categories': Category.objects.raw("SELECT * FROM cosmetics_category"),
+        'products': Product.objects.raw("SELECT * FROM cosmetics_product"),
     }
     return render(request, "cosmetics/categories.html", context)
 
@@ -42,7 +42,7 @@ def manage_category(request):
             model_category.save()
 
             # Get list of categories from database
-            context['categories'] = Category.objects.values()
+            context['categories'] = Category.objects.raw("SELECT * FROM cosmetics_category")
 
             # Create a successful notification to be displayed on the page
             messages.success(request, f"Category {name} has been created!")
@@ -55,7 +55,7 @@ def manage_category(request):
         category_form = CategoryForm()
         context = {
             'category_form': category_form,
-            'categories': Category.objects.values(),
+            'categories': Category.objects.raw("SELECT * FROM cosmetics_category"),
         }
     return render(request, 'cosmetics/management/category.html', context)
 
@@ -83,7 +83,7 @@ def update_category(request, id):
         category_form = CategoryForm(instance=category)
     context = {
         'category_form': category_form,
-        'categories': Category.objects.values(),
+        'categories': Category.objects.raw("SELECT * FROM cosmetics_category"),
     }
     return render(request, 'cosmetics/management/category.html', context)
 
