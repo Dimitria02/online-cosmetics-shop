@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpRequest, HttpResponse
+from django.db import connection
 from django.contrib import messages
 from .models import Category, Manufacturer, Product
 from .forms import CategoryForm, ManufacturerForm, ProductForm
@@ -61,8 +62,12 @@ def manage_category(request):
 
 
 def delete_category(request, id):
-    Category.objects.filter(id=id).delete()
+    # Delete using Django syntax
+    # Category.objects.filter(id=id).delete()
 
+    # Delete using SQL syntax
+    with connection.cursor() as cursor:
+        cursor.execute("DELETE FROM cosmetics_category WHERE id=%s", [id])
     # Create a successful notification to be displayed on the page
     messages.success(request, f"Category with {id} has been deleted!")
     return redirect('manage_category')
@@ -125,8 +130,12 @@ def manage_manufacturer(request):
 
 
 def delete_manufacturer(request, id):
-    Manufacturer.objects.filter(id=id).delete()
+    # Delete using Django syntax
+    # Manufacturer.objects.filter(id=id).delete()
 
+    # Delete using SQL syntax
+    with connection.cursor() as cursor:
+        cursor.execute("DELETE FROM cosmetics_manufacturer WHERE id=%s", [id])
     # Create a successful notification to be displayed on the page
     messages.success(request, f"Manufacturer with {id} has been deleted!")
     return redirect('manage_manufacturer')
@@ -201,8 +210,12 @@ def manage_product(request):
 
 
 def delete_product(request, id):
-    Product.objects.filter(id=id).delete()
+    # Delete using Django syntax
+    # Product.objects.filter(id=id).delete()
 
+    # Delete using SQL syntax
+    with connection.cursor() as cursor:
+        cursor.execute("DELETE FROM cosmetics_product WHERE id=%s", [id])
     # Create a successful notification to be displayed on the page
     messages.success(request, f"Product with {id} has been deleted!")
     return redirect('manage_product')
