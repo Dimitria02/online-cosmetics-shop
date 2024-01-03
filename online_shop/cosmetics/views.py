@@ -1,14 +1,17 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpRequest, HttpResponse
+from django.contrib.auth.decorators import login_required
 from django.db import connection
+from django.core.exceptions import ObjectDoesNotExist
 from django.contrib import messages
-from .models import Category, Manufacturer, Product
-from .forms import CategoryForm, ManufacturerForm, ProductForm
+from django.utils import timezone
+from .models import Category, Subcategory, Manufacturer, Product, Order, Cart, Client
+from .forms import CategoryForm, SubcategoryForm, ManufacturerForm, ProductForm, OrderForm, ShippingForm
 
 
 def home(request):
     context = {
-        'categories': Category.objects.raw("SELECT * FROM cosmetics_category")
+        'categories': Category.objects.raw("SELECT * FROM cosmetics_category"),
+        'products': Product.objects.raw("SELECT * FROM cosmetics_product LIMIT 4")
     }
     return render(request, "cosmetics/home.html", context)
 
@@ -16,6 +19,7 @@ def home(request):
 def categories(request):
     context = {
         'categories': Category.objects.raw("SELECT * FROM cosmetics_category"),
+        'subcategories': Subcategory.objects.raw("SELECT * FROM cosmetics_subcategory"),
         'products': Product.objects.raw("SELECT * FROM cosmetics_product"),
     }
     return render(request, "cosmetics/categories.html", context)
@@ -23,6 +27,302 @@ def categories(request):
 
 def management(request):
     return render(request, "cosmetics/base_management.html")
+
+
+def simple_queries(request):
+    query_1 = """ SELECT p.name, c.name 
+    FROM cosmetics_product p 
+    JOIN cosmetics_category c ON p.category_id=c.id 
+    WHERE c.name='Cat 1'; """
+    query_2 = """ SELECT p.name, m.name 
+    FROM cosmetics_product p 
+    JOIN cosmetics_manufacturer m ON p.manufacturer_id=m.id 
+    WHERE m.name='TBD'; """
+    query_3 = """ SELECT p.name, p.quantity 
+    FROM cosmetics_product p 
+    WHERE p.quantity < 2 ;"""
+    query_4 = """ SELECT c.username, o.ordered_date 
+    FROM cosmetics_order o 
+    JOIN cosmetics_client c ON c.id=o.client_id 
+    WHERE o.ordered_date BETWEEN '2024-01-01' AND '2024-01-06';"""
+    query_5 = """ SELECT s.name, c.name 
+    FROM cosmetics_subcategory s 
+    JOIN cosmetics_category c ON s.category_id=c.id 
+    WHERE c.name='Cat 1'; """
+    query_6 = """ SELECT p.name, p.price 
+    FROM cosmetics_product p 
+    WHERE p.price < 18 ;"""
+    query_7 = """ SELECT c.username, o.status
+    FROM cosmetics_order o
+    JOIN cosmetics_client c ON c.id=o.client_id 
+    WHERE o.status = 'AW' ;"""
+    with connection.cursor() as cursor:
+        cursor.execute(query_1)
+        response_query_1 = cursor.fetchall()
+        cursor.execute(query_2)
+        response_query_2 = cursor.fetchall()
+        cursor.execute(query_3)
+        response_query_3 = cursor.fetchall()
+        cursor.execute(query_4)
+        response_query_4 = cursor.fetchall()
+        cursor.execute(query_5)
+        response_query_5 = cursor.fetchall()
+        cursor.execute(query_6)
+        response_query_6 = cursor.fetchall()
+        cursor.execute(query_7)
+        response_query_7 = cursor.fetchall()
+
+    context = {
+        'query_1': query_1,
+        'response_query_1': response_query_1,
+        'query_2': query_2,
+        'response_query_2': response_query_2,
+        'query_3': query_3,
+        'response_query_3': response_query_3,
+        'query_4': query_4,
+        'response_query_4': response_query_4,
+        'query_5': query_5,
+        'response_query_5': response_query_5,
+        'query_6': query_6,
+        'response_query_6': response_query_6,
+        'query_7': query_7,
+        'response_query_7': response_query_7,
+    }
+    return render(request, 'cosmetics/management/simple_query.html', context)
+
+
+def complex_queries(request):
+    query_1 = """ SELECT c.username, COUNT(o.id) as numar_comenzi 
+    FROM cosmetics_client c 
+    JOIN cosmetics_order o ON c.id=o.client_id 
+    GROUP BY c.id 
+    ORDER BY numar_comenzi DESC; """
+    query_2 = """ SELECT cc.name, COUNT(*) AS numar_produse 
+    FROM cosmetics_category cc 
+    JOIN cosmetics_product cp ON cc.id=cp.category_id 
+    GROUP BY cc.id 
+    ORDER BY numar_produse DESC; """
+    query_3 = """ SELECT c.name, AVG(p.price) as pret_mediu 
+    FROM cosmetics_category c 
+    JOIN cosmetics_product p ON c.id=p.category_id 
+    GROUP BY c.id; """
+    query_4 = """ SELECT p.name, SUM(c.quantity) as total_comandat 
+    FROM cosmetics_product p 
+    JOIN cosmetics_cart c ON p.id=c.product_id 
+    GROUP BY p.id
+    ORDER BY total_comandat DESC; """
+    with connection.cursor() as cursor:
+        cursor.execute(query_1)
+        response_query_1 = cursor.fetchone()
+        cursor.execute(query_2)
+        response_query_2 = cursor.fetchone()
+        cursor.execute(query_3)
+        response_query_3 = cursor.fetchall()
+        cursor.execute(query_4)
+        response_query_4 = cursor.fetchone()
+
+    context = {
+        'query_1': query_1,
+        'response_query_1': response_query_1,
+        'query_2': query_2,
+        'response_query_2': response_query_2,
+        'query_3': query_3,
+        'response_query_3': response_query_3,
+        'query_4': query_4,
+        'response_query_4': response_query_4,
+    }
+    return render(request, 'cosmetics/management/complex_query.html', context)
+
+
+@login_required
+def view_cart(request):
+    try:
+        order = Order.objects.get(client=request.user, ordered=False)
+        context = {
+            'order': order
+        }
+        return render(request, "cosmetics/cart.html", context)
+    except ObjectDoesNotExist:
+        messages.warning(request, "You do not have an active order")
+        return redirect("home")
+
+
+@login_required
+def add_to_cart(request, id):
+    product = get_object_or_404(Product, pk=id)
+    cart_item, created = Cart.objects.get_or_create(client=request.user, product=product, ordered=False)
+
+    order_qs = Order.objects.filter(client=request.user, ordered=False)
+    if order_qs.exists():
+        order = order_qs[0]
+        if order.carts.filter(product_id=product.id).exists():
+            cart_item.quantity += 1
+            cart_item.save()
+            messages.info(request, "This product quantity was updated.")
+            return redirect('view_cart')
+        else:
+            order.carts.add(cart_item)
+            messages.success(request, "This item was added to your cart.")
+            return redirect('view_cart')
+    else:
+        ordered_date = timezone.now()
+        order = Order.objects.create(client=request.user, ordered_date=ordered_date)
+        order.save()
+        order.carts.add(cart_item)
+        messages.success(request, "This item was added to your cart.")
+        return redirect('view_cart')
+
+
+@login_required
+def remove_from_cart(request, id):
+    product = get_object_or_404(Product, pk=id)
+    order_qs = Order.objects.filter(client=request.user, ordered=False)
+
+    if order_qs.exists():
+        order = order_qs[0]
+        if order.carts.filter(product_id=product.id).exists():
+            cart_item = Cart.objects.filter(client=request.user, product=product, ordered=False)[0]
+            order.carts.remove(cart_item)
+            cart_item.delete()
+            messages.info(request, "This item was removed from your cart.")
+            return redirect('view_cart')
+        else:
+            messages.info(request, "This item was not in your cart")
+            return redirect('categories')
+    else:
+        messages.info(request, "You do not have an active order")
+        return redirect('categories')
+
+
+@login_required
+def view_checkout(request):
+
+    if request.method == 'POST':
+        shipping_form = ShippingForm(data=request.POST or None)
+        try:
+            order = Order.objects.get(client=request.user, ordered=False)
+
+            # shipping_form = ShippingForm(data=request.POST, instance=order)
+            if shipping_form.is_valid():
+                order.status = "PR"
+                order.save()
+                # order.carts.set(items)
+                street = shipping_form.cleaned_data["street"]
+                city = shipping_form.cleaned_data["city"]
+                country = shipping_form.cleaned_data["country"]
+                zip_code = shipping_form.cleaned_data["zip_code"]
+
+                ordered_date = timezone.now()
+
+                # Update ordered status for cart items
+                order_carts = order.carts.all()
+                order.carts.update(ordered=True)
+                for item in order_carts:
+                    item.save()
+
+                # Update ordered status for order item
+                order.ordered = True
+                order.save()
+
+                # Update using Django syntax
+                # order.ordered_date = ordered_date
+                # order.save()
+                # shipping_form.save()
+
+                # Update and get object using SQL syntax
+                with connection.cursor() as cursor:
+                    cursor.execute("UPDATE cosmetics_order SET "
+                                   "street=%s, city=%s, country=%s, "
+                                   "zip_code=%s, ordered_date=%s WHERE id=%s",
+                                   [street, city, country, zip_code, ordered_date, order.id])
+                    cursor.execute("SELECT * FROM cosmetics_order WHERE id=%s", [order.id])
+
+                # Create a success notification to be displayed on the page
+                messages.success(request, f"Order {order.id} has been sent!")
+                return redirect('categories')
+        except ObjectDoesNotExist:
+            messages.info(request, "You do not have an active order")
+            return redirect('categories')
+    else:
+        try:
+            # Get object from database using Django syntax
+            order = Order.objects.get(client=request.user, ordered=False)
+            print(order)
+
+            context = {
+                'shipping_form': ShippingForm(),
+                'order': order,
+            }
+            return render(request, "cosmetics/checkout.html", context)
+        except ObjectDoesNotExist:
+            messages.info(request, "You do not have an active order")
+            return redirect('home')
+            # Order.objects.create(client=request.user, status='AW')
+
+    return redirect('view_checkout')
+
+
+def manage_order(request):
+    order_form = OrderForm()
+    orders = Order.objects.raw("SELECT * FROM cosmetics_order")
+    context = {
+        'order_form': order_form,
+        'orders': orders,
+    }
+    return render(request, 'cosmetics/management/order.html', context)
+
+
+def delete_order(request, id):
+    # Delete using Django syntax
+    Order.objects.filter(id=id).delete()
+    messages.success(request, f"Order number {id} has been deleted!")
+    return redirect('manage_order')
+
+
+def update_order(request, id):
+    # Get object from database using Django syntax
+    order = get_object_or_404(Order, pk=id)
+
+    if request.method == 'POST':
+        order_form = OrderForm(data=request.POST, instance=order)
+        if order_form.is_valid():
+            status = order_form.cleaned_data["status"]
+            street = order_form.cleaned_data["street"]
+            city = order_form.cleaned_data["city"]
+            country = order_form.cleaned_data["country"]
+            zip_code = order_form.cleaned_data["zip_code"]
+
+            # Update using Django syntax
+            # order_form.save()
+
+            # Update and get object using SQL syntax
+            with connection.cursor() as cursor:
+                cursor.execute("UPDATE cosmetics_order SET status=%s,"
+                               "street=%s, city=%s, country=%s, zip_code=%s WHERE id=%s",
+                               [status, street, city, country, zip_code, order.pk])
+                cursor.execute("SELECT * FROM cosmetics_order WHERE id=%s", [id])
+
+            # Create a warning notification to be displayed on the page
+            messages.warning(request, f"Order number {id} has been updated!")
+            return redirect('manage_order')
+    else:
+        order_form = OrderForm(instance=order)
+    context = {
+        'order_form': order_form,
+        'orders': Order.objects.raw("SELECT * FROM cosmetics_order"),
+    }
+    return render(request, 'cosmetics/management/order.html', context)
+
+
+@login_required
+def user_profile(request):
+
+    context = {
+        'client': Client.objects.raw("SELECT * FROM cosmetics_client WHERE username=%s", [str(request.user)])[0],
+        'orders': Order.objects.raw("SELECT * FROM cosmetics_order WHERE client_id=%s", [str(request.user.id)]),
+    }
+
+    return render(request, 'cosmetics/user_profile.html', context)
 
 
 def manage_category(request):
@@ -74,12 +374,20 @@ def delete_category(request, id):
 
 
 def update_category(request, id):
+    # Get object from database using Django syntax
     category = get_object_or_404(Category, id=id)
+
     if request.method == 'POST':
         category_form = CategoryForm(data=request.POST, instance=category)
         if category_form.is_valid():
-            category_form.save()
             name = category_form.cleaned_data["name"]
+            # Update using Django syntax
+            # category_form.save()
+
+            # Update and get object using SQL syntax
+            with connection.cursor() as cursor:
+                cursor.execute("UPDATE cosmetics_category SET name=%s WHERE id=%s", [name, id])
+                cursor.execute("SELECT * FROM cosmetics_category WHERE id=%s", [id])
 
             # Create a warning notification to be displayed on the page
             messages.warning(request, f"Category {name} has been updated!")
@@ -93,9 +401,86 @@ def update_category(request, id):
     return render(request, 'cosmetics/management/category.html', context)
 
 
+def manage_subcategory(request):
+    if request.method == "POST":
+        # Initialize form for subcategory
+        subcategory_form = SubcategoryForm(request.POST)
+        context = {
+            'subcategory_form': subcategory_form
+        }
+        if subcategory_form.is_valid():
+            # Get data from web interface
+            name = subcategory_form.cleaned_data["name"]
+            category = subcategory_form.cleaned_data["category"]
+
+            # Create a new object to be inserted in database
+            model_subcategory = Subcategory(name=name, category=category)
+
+            # Save the object in database with the above values
+            model_subcategory.save()
+
+            # Get list of categories from database
+            context['subcategories'] = Subcategory.objects.raw("SELECT * FROM cosmetics_subcategory")
+
+            # Create a successful notification to be displayed on the page
+            messages.success(request, f"Subcategory {name} has been created!")
+            return redirect('manage_subcategory')
+        else:
+            print("subcategory Form is invalid")
+            # Create an error notification to be displayed on the page
+            messages.error(request, "Inserted data are wrong! Please check again the data!")
+    elif request.method == "GET":
+        subcategory_form = SubcategoryForm()
+        context = {
+            'subcategory_form': subcategory_form,
+            'subcategories': Subcategory.objects.raw("SELECT * FROM cosmetics_subcategory"),
+        }
+    return render(request, 'cosmetics/management/subcategory.html', context)
+
+
+def delete_subcategory(request, id):
+    # Delete using Django syntax
+    # subcategory.objects.filter(id=id).delete()
+
+    # Delete using SQL syntax
+    with connection.cursor() as cursor:
+        cursor.execute("DELETE FROM cosmetics_subcategory WHERE id=%s", [id])
+    # Create a successful notification to be displayed on the page
+    messages.success(request, f"Subcategory with {id} has been deleted!")
+    return redirect('manage_subcategory')
+
+
+def update_subcategory(request, id):
+    # Get object from database using Django syntax
+    subcategory = get_object_or_404(Subcategory, id=id)
+
+    if request.method == 'POST':
+        subcategory_form = SubcategoryForm(data=request.POST, instance=subcategory)
+        if subcategory_form.is_valid():
+            name = subcategory_form.cleaned_data["name"]
+            # Update using Django syntax
+            # subcategory_form.save()
+
+            # Update and get object using SQL syntax
+            with connection.cursor() as cursor:
+                cursor.execute("UPDATE cosmetics_subcategory SET name=%s WHERE id=%s", [name, id])
+                cursor.execute("SELECT * FROM cosmetics_subcategory WHERE id=%s", [id])
+
+            # Create a warning notification to be displayed on the page
+            messages.warning(request, f"Subcategory {name} has been updated!")
+            return redirect('manage_subcategory')
+    else:
+        subcategory_form = SubcategoryForm(instance=subcategory)
+    context = {
+        'subcategory_form': subcategory_form,
+        'subcategories': Subcategory.objects.raw("SELECT * FROM cosmetics_subcategory"),
+    }
+    return render(request, 'cosmetics/management/subcategory.html', context)
+
+
 def manage_manufacturer(request):
     if request.method == "POST":
-        # Initialize form for category
+        # Initialize form for manufacturer
         manufacturer_form = ManufacturerForm(request.POST)
         context = {
             'manufacturer_form': manufacturer_form
@@ -111,7 +496,7 @@ def manage_manufacturer(request):
             model_manufacturer.save()
 
             # Get list of categories from database
-            context['manufacturers'] = Manufacturer.objects.values()
+            context['manufacturers'] = Manufacturer.objects.raw("SELECT * FROM cosmetics_manufacturer")
 
             # Create a successful notification to be displayed on the page
             messages.success(request, f"Manufacturer {name} has been created!")
@@ -124,7 +509,7 @@ def manage_manufacturer(request):
         manufacturer_form = ManufacturerForm()
         context = {
             'manufacturer_form': manufacturer_form,
-            'manufacturers': Manufacturer.objects.values(),
+            'manufacturers': Manufacturer.objects.raw("SELECT * FROM cosmetics_manufacturer"),
         }
     return render(request, 'cosmetics/management/manufacturer.html', context)
 
@@ -142,12 +527,20 @@ def delete_manufacturer(request, id):
 
 
 def update_manufacturer(request, id):
+    # Get object from database using Django syntax
     manufacturer = get_object_or_404(Manufacturer, id=id)
+
     if request.method == 'POST':
         manufacturer_form = ManufacturerForm(data=request.POST, instance=manufacturer)
         if manufacturer_form.is_valid():
-            manufacturer_form.save()
             name = manufacturer_form.cleaned_data["name"]
+            # Update using Django syntax
+            # manufacturer_form.save()
+
+            # Update and get object using SQL syntax
+            with connection.cursor() as cursor:
+                cursor.execute("UPDATE cosmetics_manufacturer SET name=%s WHERE id=%s", [name, id])
+                cursor.execute("SELECT * FROM cosmetics_manufacturer WHERE id=%s", [id])
 
             # Create a warning notification to be displayed on the page
             messages.warning(request, f"Manufacturer {name} has been updated!")
@@ -156,7 +549,7 @@ def update_manufacturer(request, id):
         manufacturer_form = ManufacturerForm(instance=manufacturer)
     context = {
         'manufacturer_form': manufacturer_form,
-        'manufacturers': Manufacturer.objects.values(),
+        'manufacturers': Manufacturer.objects.raw("SELECT * FROM cosmetics_manufacturer"),
     }
     return render(request, 'cosmetics/management/manufacturer.html', context)
 
@@ -175,6 +568,7 @@ def manage_product(request):
             price = product_form.cleaned_data["price"]
             quantity = product_form.cleaned_data["quantity"]
             category = product_form.cleaned_data["category"]
+            subcategory = product_form.cleaned_data["subcategory"]
             manufacturer = product_form.cleaned_data["manufacturer"]
 
             # Create a new object to be inserted in database
@@ -184,13 +578,14 @@ def manage_product(request):
                                     quantity=quantity,
                                     icon=request.FILES["icon"],
                                     category=category,
+                                    subcategory=subcategory,
                                     manufacturer=manufacturer)
 
             # Save the object in database with the above values
             model_product.save()
 
             # Get list of categories from database
-            context['products'] = Product.objects.values()
+            context['products'] = Product.objects.raw("SELECT * FROM cosmetics_product")
 
             # Create a successful notification to be displayed on the page
             messages.success(request, f"Product {name} has been created!")
@@ -204,7 +599,7 @@ def manage_product(request):
         product_form = ProductForm()
         context = {
             'product_form': product_form,
-            'products': Product.objects.values(),
+            'products': Product.objects.raw("SELECT * FROM cosmetics_product"),
         }
     return render(request, 'cosmetics/management/product.html', context)
 
@@ -226,8 +621,32 @@ def update_product(request, id):
     if request.method == 'POST':
         product_form = ProductForm(data=request.POST, instance=product)
         if product_form.is_valid():
-            product_form.save()
             name = product_form.cleaned_data["name"]
+            description = product_form.cleaned_data["description"]
+            price = product_form.cleaned_data["price"]
+            quantity = product_form.cleaned_data["quantity"]
+            category = product_form.cleaned_data["category"]
+            subcategory = product_form.cleaned_data["subcategory"]
+            manufacturer = product_form.cleaned_data["manufacturer"]
+
+            category_id = Category.objects.raw("SELECT * FROM cosmetics_category WHERE name=%s", [str(category)])
+            subcategory_id = Subcategory.objects.raw("SELECT * FROM cosmetics_subcategory WHERE name=%s", [str(subcategory)])
+            manufacturer_id = Manufacturer.objects.raw("SELECT * FROM cosmetics_manufacturer WHERE name=%s", [str(manufacturer)])
+
+            # Update using Django syntax
+            # product_form.save()
+
+            # Update and get object using SQL syntax
+            with connection.cursor() as cursor:
+                cursor.execute("UPDATE cosmetics_product SET name=%s, description=%s, "
+                               "price=%s, quantity=%s, category_id=%s, "
+                               "subcategory_id=%s, manufacturer_id=%s WHERE id=%s",
+                               [name, description, price, quantity,
+                                category_id[0].id, subcategory_id[0].id, manufacturer_id[0].id, id])
+                cursor.execute("SELECT * FROM cosmetics_product WHERE id=%s", [id])
+
+            # For debug purposes
+            # print(connection.queries)
 
             # Create a warning notification to be displayed on the page
             messages.warning(request, f"Product {name} has been updated!")
@@ -236,7 +655,7 @@ def update_product(request, id):
         product_form = ProductForm(instance=product)
     context = {
         'product_form': product_form,
-        'products': Product.objects.values(),
+        'products': Product.objects.raw("SELECT * FROM cosmetics_product"),
     }
     return render(request, 'cosmetics/management/product.html', context)
 

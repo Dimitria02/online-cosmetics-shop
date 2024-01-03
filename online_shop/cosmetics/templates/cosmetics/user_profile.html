@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% block content %}
+<div class="container">
+    <!-- HERO SECTION-->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="row px-4 px-lg-5 py-lg-4 align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="h2 text-uppercase mb-0">Administrate your account</h1>
+                </div>
+                <div class="col-lg-6 text-lg-end">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb justify-content-lg-end mb-0 px-0 bg-light">
+                            <li class="breadcrumb-item">
+                                <a class="text-dark" href="{% url 'home' %}">Home</a>
+                            </li>
+                            <li class="breadcrumb-item active" aria-current="page">User Profile</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="py-5">
+        <div class="row">
+            <div class="col-lg-4">
+                <div class="card mb-4">
+                    <div class="card-body text-center">
+                        <img src="{% static 'img/customer-2.png' %}" alt="avatar" class="rounded-circle img-fluid" style="width: 150px;">
+                        <h5 class="my-3">{{ client.username }}</h5>
+                        <p class="text-muted mb-1">Date Joined : {{ client.date_joined }}</p>
+                        <p class="text-muted mb-4">Last Login : {{ client.last_login }}</p>
+                    </div>
+                </div>
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-sm-3">
+                                <p class="mb-0">Full Name</p>
+                            </div>
+                            <div class="col-sm-9">
+                                <p class="text-muted mb-0">{{ client.first_name }} {{ client.last_name }}</p>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="col-sm-3">
+                                <p class="mb-0">Email</p>
+                            </div>
+                            <div class="col-sm-9">
+                                <p class="text-muted mb-0">{{ client.email }}</p>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="col-sm-3">
+                                <p class="mb-0">Phone</p>
+                            </div>
+                            <div class="col-sm-9">
+                                <p class="text-muted mb-0">{{ client.phone_number }}</p>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="col-sm-3">
+                                <p class="mb-0">Address</p>
+                            </div>
+                            <div class="col-sm-9">
+                                <p class="text-muted mb-0">{{ client.address }}</p>
+                            </div>
+                        </div>
+                        <hr>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-8">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <p class="mb-4">
+                            <span class="text-primary font-italic me-2">Order Status</span>
+                        </p>
+                        <table class="table table-lg" cellspacing="0" width="100%">
+                            <thead>
+                                <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Details</th>
+                                    <th scope="col">Ordered Date</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Street</th>
+                                    <th scope="col">City</th>
+                                    <th scope="col">Country</th>
+                                    <th scope="col">ZIP Code</th>
+                                    <th scope="col">Total Price</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in orders %}
+                                    <tr>
+                                        <th scope="row">{{ forloop.counter }}</th>
+                                        <td>
+                                            {% for item in order.carts.all %}
+                                                {{ item.product.name }} ({{ item.product.price }} RON) x {{ item.quantity }} <br>
+                                            {% endfor %}
+                                        </td>
+                                        <td>{{ order.ordered_date }}</td>
+                                        <td>{{ order.status }}</td>
+                                        <td>{{ order.street }}</td>
+                                        <td>{{ order.city }}</td>
+                                        <td>{{ order.country }}</td>
+                                        <td>{{ order.zip_code }}</td>
+                                        <td>{{ order.get_total }} RON</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

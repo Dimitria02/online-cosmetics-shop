@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Product Management{% endblock %}
+{% block title %}Subcategory Management{% endblock %}
 {% load crispy_forms_tags %}
 {% block content %}
 {% load static %}
@@ -22,7 +22,7 @@
                                 <a class="text-dark" href="{% url 'management' %}">Management</a>
                             </li>
                             <li class="breadcrumb-item active" aria-current="page">
-                                <a href="{% url 'manage_product' %}">Product</a>
+                                <a href="{% url 'manage_subcategory' %}">Subcategory</a>
                             </li>
                         </ol>
                     </nav>
@@ -34,42 +34,32 @@
 
     <section class="py-5">
         <header class="text-center">
-            <p class="small text-muted small text-uppercase mb-1">Currently following products are created</p>
+            <p class="small text-muted small text-uppercase mb-1">Currently following subcategories are created</p>
         </header>
         <div class="container">
             <table class="table table-lg" cellspacing="0" width="100%">
                 <thead>
                     <tr>
                         <th scope="col">#</th>
-                        <th scope="col">Product Name</th>
-                        <th scope="col">Description</th>
-                        <th scope="col">Price</th>
-                        <th scope="col">Quantity</th>
-                        <th scope="col">Category</th>
-                        <th scope="col">Subcategory</th>
-                        <th scope="col">Manufacturer</th>
+                        <th scope="col">Subcategory Name</th>
+                        <th scope="col">Category Name</th>
                         <th scope="col">Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for product in products %}
+                    {% for subcategory in subcategories %}
                         <tr>
                             <th scope="row">{{ forloop.counter }}</th>
-                            <td>{{ product.name }}</td>
-                            <td>{{ product.description }}</td>
-                            <td>{{ product.price }}</td>
-                            <td>{{ product.quantity }}</td>
-                            <td>{{ product.category }}</td>
-                            <td>{{ product.subcategory }}</td>
-                            <td>{{ product.manufacturer }}</td>
+                            <td>{{ subcategory.name }}</td>
+                            <td>{{ subcategory.category }}</td>
                             <td>
-                                <a class="btn btn-warning" role="button" href="{% url 'update_product'  product.id %}">Edit</a>
-                                <a class="btn btn-danger" role="button" data-bs-toggle="modal" data-bs-target="#delete-item-modal-{{ product.id }}" id="delete-item-{{ product.id }}">Delete</a>
+                                <a class="btn btn-warning" role="button" href="{% url 'update_subcategory'  subcategory.id %}">Edit</a>
+                                <a class="btn btn-danger" role="button" data-bs-toggle="modal" data-bs-target="#delete-item-modal-{{ subcategory.id }}" id="delete-item-{{ subcategory.id }}">Delete</a>
                             </td>
                         </tr>
 
                         <!-- Start of modal section for delete items -->
-                        <div class="modal fade" id="delete-item-modal-{{ product.id }}">
+                        <div class="modal fade" id="delete-item-modal-{{ subcategory.id }}">
                             <div class="modal-dialog">
                                 <div class="modal-content">
                                     <div class="modal-header">
@@ -79,11 +69,11 @@
                                         </button>
                                     </div>
                                     <div class="modal-body">
-                                        <p>Are you really sure you want to remove this product?</p>
-                                        <p style="font-weight: bold;">{{ product.name }}</p>
+                                        <p>Are you really sure you want to remove this subcategory?</p>
+                                        <p style="font-weight: bold;">{{ subcategory.name }}</p>
                                     </div>
                                     <div class="modal-footer justify-content-between">
-                                        <a class="btn btn-danger" role="button" href="{% url 'delete_product'  product.id %}" id="confirm-delete-item-button">Delete</a>
+                                        <a class="btn btn-danger" role="button" href="{% url 'delete_subcategory'  subcategory.id %}" id="confirm-delete-item-button">Delete</a>
                                         <button type="button" class="btn btn-secondary mr-1" data-bs-dismiss="modal">Cancel</button>
                                     </div>
                                 </div>
@@ -98,12 +88,12 @@
 
     <section class="py-5">
         <header class="text-center">
-            <p class="small text-muted small text-uppercase mb-1">You can add or update a product using this form</p>
+            <p class="small text-muted small text-uppercase mb-1">You can add or update a subcategory using this form</p>
         </header>
-        <div class="container" id="add_product">
+        <div class="container" id="add_subcategory">
             <form class="form-horizontal form-material" method="post" enctype="multipart/form-data">
                 {% csrf_token %}
-                {% crispy product_form %}
+                {% crispy subcategory_form %}
                 <div class="form-group">
                     <div class="col-sm-12">
                         <button type="submit" class="btn btn-success">Send</button>

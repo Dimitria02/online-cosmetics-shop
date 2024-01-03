@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Simple Queries Management{% endblock %}
+{% load crispy_forms_tags %}
+{% block content %}
+{% load static %}
+<div class="container">
+
+    <!-- TOP SECTION-->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="row px-4 px-lg-5 py-lg-4 align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="h2 text-uppercase mb-0">Management page cosmetics shop</h1>
+                </div>
+                <div class="col-lg-6 text-lg-end">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb justify-content-lg-end mb-0 px-0 bg-light">
+                            <li class="breadcrumb-item">
+                                <a class="text-dark" href="{% url 'home' %}">Home</a>
+                            </li>
+                            <li class="breadcrumb-item">
+                                <a class="text-dark" href="{% url 'management' %}">Management</a>
+                            </li>
+                            <li class="breadcrumb-item active" aria-current="page">
+                                <a href="{% url 'simple_queries' %}">Simple Queries</a>
+                            </li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- End of TOP SECTION-->
+
+    <section class="py-5">
+        <div class="card mb-4">
+            <div class="card-body">
+                <p>1. Afisarea produselor dintr-o anumita categorie</p>
+                <p>Following query will be executed : <br> <b>{{ query_1 }}</b></p>
+                {% for item in response_query_1 %}
+                    <p>Results : Product : <b>{{ item.0 }}</b> belongs to Category : <b>{{ item.1 }}</b> </p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <p>2. Afisarea produselor unui anumit producator</p>
+                <p>Following query will be executed : <br> <b>{{ query_2 }}</b></p>
+                {% for item in response_query_2 %}
+                    <p>Results : Product : <b>{{ item.0 }}</b> belongs to Manufacturer : <b>{{ item.1 }}</b> </p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <p>3. Afisarea produselor care sunt in stoc sub o anumita cantitate</p>
+                <p>Following query will be executed : <br> <b>{{ query_3 }}</b></p>
+                {% for item in response_query_3 %}
+                    <p>Results : Product : <b>{{ item.0 }}</b> has a stock of <b>{{ item.1 }}</b> item(s)</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <p>4. Afisarea tuturor comenzilor plasate intr-o anumita perioada</p>
+                <p>Following query will be executed : <br> <b>{{ query_4 }}</b></p>
+                {% for item in response_query_4 %}
+                    <p>Results : Client : <b>{{ item.0 }}</b> has been ordered in <b>{{ item.1|date:"Y-M-d" }}</b></p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <p>5. Afisarea tuturor subcategoriilor dintr-o categorie specifica</p>
+                <p>Following query will be executed : <br> <b>{{ query_5 }}</b></p>
+                {% for item in response_query_5 %}
+                    <p>Results : Subcategory : <b>{{ item.0 }}</b> belongs to Category : <b>{{ item.1 }}</b></p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <p>6. Afisarea tuturor produselor care sunt mai mici de o anumita suma</p>
+                <p>Following query will be executed : <br> <b>{{ query_6 }}</b></p>
+                {% for item in response_query_6 %}
+                    <p>Results : Product : <b>{{ item.0 }}</b> has price : <b>{{ item.1 }} RON</b></p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <p>7. Afisarea tuturor comenzilor cu un anumit status</p>
+                <p>Following query will be executed : <br> <b>{{ query_7 }}</b></p>
+                {% for item in response_query_7 %}
+                    <p>Results : Client : <b>{{ item.0 }}</b> has order with status : <b>{{ item.1 }}</b></p>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
