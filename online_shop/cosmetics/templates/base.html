@@ -56,13 +56,13 @@
                             </ul>
                             <ul class="navbar-nav ms-auto">
                                 <li class="nav-item">
-                                    <a class="nav-link" href="{% url 'home' %}">
+                                    <a class="nav-link" href="{% url 'view_cart' %}">
                                         <i class="fas fa-dolly-flatbed me-1 text-gray"></i>Cart <small class="text-gray fw-normal"></small>
                                     </a>
                                 </li>
                                 {% if user.is_authenticated %}
                                     <li class="nav-item">
-                                        <a class="nav-link" href="#!">
+                                        <a class="nav-link" href="{% url 'user_profile' %}">
                                             <i class="fas fa-user me-1 text-gray fw-normal"></i>{{ user.username }}
                                         </a>
                                     </li>
@@ -142,7 +142,6 @@
             <script src="{% static 'vendor/nouislider/nouislider.min.js' %}"></script>
             <script src="{% static 'vendor/swiper/swiper-bundle.min.js' %}"></script>
             <script src="{% static 'vendor/choices.js/public/assets/scripts/choices.min.js' %}"></script>
-            <script src="{% static 'js/front.js' %}"></script>
             <script>
                 // ------------------------------------------------------- //
                 //   Inject SVG Sprite -
