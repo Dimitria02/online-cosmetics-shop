@@ -52,6 +52,7 @@ urlpatterns = [
     path('management/manufacturer/edit/<int:id>', cosmetics_views.update_manufacturer, name='update_manufacturer'),
     path('product/<int:id>', cosmetics_views.product_detail, name='product_detail'),
     path('simple_queries/', cosmetics_views.simple_queries, name='simple_queries'),
+    path('simple_dynamic_queries/', cosmetics_views.simple_dynamic_queries, name='simple_dynamic_queries'),
     path('complex_queries/', cosmetics_views.complex_queries, name='complex_queries'),
 ]
 
