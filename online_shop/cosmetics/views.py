@@ -5,7 +5,9 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.contrib import messages
 from django.utils import timezone
 from .models import Category, Subcategory, Manufacturer, Product, Order, Cart, Client
-from .forms import CategoryForm, SubcategoryForm, ManufacturerForm, ProductForm, OrderForm, ShippingForm
+from .forms import CategoryForm, SubcategoryForm, ManufacturerForm, ProductForm, OrderForm, \
+    ShippingForm, SimpleDynamicQuery1Form, SimpleDynamicQuery2Form, SimpleDynamicQuery3Form, \
+    SimpleDynamicQuery4Form, SimpleDynamicQuery5Form, SimpleDynamicQuery6Form, SimpleDynamicQuery7Form
 
 
 def home(request):
@@ -27,6 +29,209 @@ def categories(request):
 
 def management(request):
     return render(request, "cosmetics/base_management.html")
+
+
+def simple_dynamic_queries(request):
+    if request.method == 'POST':
+        form_query_1 = SimpleDynamicQuery1Form(request.POST)
+        if form_query_1.is_valid():
+            category_name = form_query_1.cleaned_data["category_name"]
+
+            query_1 = """ SELECT p.name, c.name 
+            FROM cosmetics_product p 
+            JOIN cosmetics_category c ON p.category_id=c.id 
+            WHERE c.name=%s; """
+            with connection.cursor() as cursor:
+                cursor.execute(query_1, [category_name])
+                response_query_1 = cursor.fetchall()
+
+            # Create a success notification to be displayed on the page
+            messages.success(request, f"Query has been executed! Result {response_query_1}")
+            context = {
+                'form_query_1': form_query_1,
+                'form_query_2': SimpleDynamicQuery2Form(),
+                'form_query_3': SimpleDynamicQuery3Form(),
+                'form_query_4': SimpleDynamicQuery4Form(),
+                'form_query_5': SimpleDynamicQuery5Form(),
+                'form_query_6': SimpleDynamicQuery6Form(),
+                'form_query_7': SimpleDynamicQuery7Form(),
+                'query_1': query_1.replace('%s', category_name),
+                'response_query_1': response_query_1,
+            }
+            return render(request, 'cosmetics/management/simple_dynamic_query.html', context)
+
+        form_query_2 = SimpleDynamicQuery2Form(request.POST)
+        if form_query_2.is_valid():
+            manufacturer_name = form_query_2.cleaned_data["manufacturer_name"]
+
+            query_2 = """ SELECT p.name, m.name 
+            FROM cosmetics_product p 
+            JOIN cosmetics_manufacturer m ON p.manufacturer_id=m.id 
+            WHERE m.name=%s; """
+            with connection.cursor() as cursor:
+                cursor.execute(query_2, [manufacturer_name])
+                response_query_2 = cursor.fetchall()
+
+            # Create a success notification to be displayed on the page
+            messages.success(request, f"Query has been executed! Result {response_query_2}")
+            context = {
+                'form_query_1': SimpleDynamicQuery1Form(),
+                'form_query_2': form_query_2,
+                'form_query_3': SimpleDynamicQuery3Form(),
+                'form_query_4': SimpleDynamicQuery4Form(),
+                'form_query_5': SimpleDynamicQuery5Form(),
+                'form_query_6': SimpleDynamicQuery6Form(),
+                'form_query_7': SimpleDynamicQuery7Form(),
+                'query_2': query_2.replace('%s', manufacturer_name),
+                'response_query_2': response_query_2,
+            }
+            return render(request, 'cosmetics/management/simple_dynamic_query.html', context)
+
+        form_query_3 = SimpleDynamicQuery3Form(request.POST)
+        if form_query_3.is_valid():
+            product_quantity = form_query_3.cleaned_data["product_quantity"]
+
+            query_3 = """ SELECT p.name, p.quantity 
+            FROM cosmetics_product p 
+            WHERE p.quantity < %s ;"""
+            with connection.cursor() as cursor:
+                cursor.execute(query_3, [int(product_quantity)])
+                response_query_3 = cursor.fetchall()
+
+            # Create a success notification to be displayed on the page
+            messages.success(request, f"Query has been executed! Result {response_query_3}")
+            context = {
+                'form_query_1': SimpleDynamicQuery1Form(),
+                'form_query_2': SimpleDynamicQuery2Form(),
+                'form_query_3': form_query_3,
+                'form_query_4': SimpleDynamicQuery4Form(),
+                'form_query_5': SimpleDynamicQuery5Form(),
+                'form_query_6': SimpleDynamicQuery6Form(),
+                'form_query_7': SimpleDynamicQuery7Form(),
+                'query_3': query_3.replace('%s', str(product_quantity)),
+                'response_query_3': response_query_3,
+            }
+            return render(request, 'cosmetics/management/simple_dynamic_query.html', context)
+
+        form_query_4 = SimpleDynamicQuery4Form(request.POST)
+        if form_query_4.is_valid():
+            start_date = form_query_4.cleaned_data["start_date"]
+            stop_date = form_query_4.cleaned_data["stop_date"]
+
+            query_4 = """ SELECT c.username, o.ordered_date 
+            FROM cosmetics_order o 
+            JOIN cosmetics_client c ON c.id=o.client_id 
+            WHERE o.ordered_date BETWEEN %s1 AND %s2;"""
+            with connection.cursor() as cursor:
+                cursor.execute(query_4, [start_date, stop_date])
+                response_query_4 = cursor.fetchall()
+
+            # Create a success notification to be displayed on the page
+            messages.success(request, f"Query has been executed! Result {response_query_4}")
+            context = {
+                'form_query_1': SimpleDynamicQuery1Form(),
+                'form_query_2': SimpleDynamicQuery2Form(),
+                'form_query_3': SimpleDynamicQuery3Form(),
+                'form_query_4': form_query_4,
+                'form_query_5': SimpleDynamicQuery5Form(),
+                'form_query_6': SimpleDynamicQuery6Form(),
+                'form_query_7': SimpleDynamicQuery7Form(),
+                'query_4': query_4.replace('%s1', str(start_date)).replace('%s2', str(stop_date)),
+                'response_query_4': response_query_4,
+            }
+            return render(request, 'cosmetics/management/simple_dynamic_query.html', context)
+
+        form_query_5 = SimpleDynamicQuery5Form(request.POST)
+        if form_query_5.is_valid():
+            new_category_name = form_query_5.cleaned_data["new_category_name"]
+
+            query_5 = """ SELECT s.name, c.name 
+            FROM cosmetics_subcategory s 
+            JOIN cosmetics_category c ON s.category_id=c.id 
+            WHERE c.name=%s; """
+            with connection.cursor() as cursor:
+                cursor.execute(query_5, [new_category_name])
+                response_query_5 = cursor.fetchall()
+
+            # Create a success notification to be displayed on the page
+            messages.success(request, f"Query has been executed! Result {response_query_5}")
+            context = {
+                'form_query_1': SimpleDynamicQuery1Form(),
+                'form_query_2': SimpleDynamicQuery2Form(),
+                'form_query_3': SimpleDynamicQuery3Form(),
+                'form_query_4': SimpleDynamicQuery4Form(),
+                'form_query_5': form_query_5,
+                'form_query_6': SimpleDynamicQuery6Form(),
+                'form_query_7': SimpleDynamicQuery7Form(),
+                'query_5': query_5.replace('%s', new_category_name),
+                'response_query_5': response_query_5,
+            }
+            return render(request, 'cosmetics/management/simple_dynamic_query.html', context)
+
+        form_query_6 = SimpleDynamicQuery6Form(request.POST)
+        if form_query_6.is_valid():
+            product_price = form_query_6.cleaned_data["product_price"]
+
+            query_6 = """ SELECT p.name, p.price 
+            FROM cosmetics_product p 
+            WHERE p.price < %s ;"""
+            with connection.cursor() as cursor:
+                cursor.execute(query_6, [int(product_price)])
+                response_query_6 = cursor.fetchall()
+
+            # Create a success notification to be displayed on the page
+            messages.success(request, f"Query has been executed! Result {response_query_6}")
+            context = {
+                'form_query_1': SimpleDynamicQuery1Form(),
+                'form_query_2': SimpleDynamicQuery2Form(),
+                'form_query_3': SimpleDynamicQuery3Form(),
+                'form_query_4': SimpleDynamicQuery4Form(),
+                'form_query_5': SimpleDynamicQuery5Form(),
+                'form_query_6': form_query_6,
+                'form_query_7': SimpleDynamicQuery7Form(),
+                'query_6': query_6.replace('%s', str(product_price)),
+                'response_query_6': response_query_6,
+            }
+            return render(request, 'cosmetics/management/simple_dynamic_query.html', context)
+
+        form_query_7 = SimpleDynamicQuery7Form(request.POST)
+        if form_query_7.is_valid():
+            status_order = form_query_7.cleaned_data["status_order"]
+
+            query_7 = """ SELECT c.username, o.status
+            FROM cosmetics_order o
+            JOIN cosmetics_client c ON c.id=o.client_id 
+            WHERE o.status = %s ;"""
+            with connection.cursor() as cursor:
+                cursor.execute(query_7, [status_order])
+                response_query_7 = cursor.fetchall()
+
+            # Create a success notification to be displayed on the page
+            messages.success(request, f"Query has been executed! Result {response_query_7}")
+            context = {
+                'form_query_1': SimpleDynamicQuery1Form(),
+                'form_query_2': SimpleDynamicQuery2Form(),
+                'form_query_3': SimpleDynamicQuery3Form(),
+                'form_query_4': SimpleDynamicQuery4Form(),
+                'form_query_5': SimpleDynamicQuery5Form(),
+                'form_query_6': SimpleDynamicQuery6Form(),
+                'form_query_7': form_query_7,
+                'query_7': query_7.replace('%s', str(status_order)),
+                'response_query_7': response_query_7,
+            }
+            return render(request, 'cosmetics/management/simple_dynamic_query.html', context)
+
+    else:
+        context = {
+            'form_query_1': SimpleDynamicQuery1Form(),
+            'form_query_2': SimpleDynamicQuery2Form(),
+            'form_query_3': SimpleDynamicQuery3Form(),
+            'form_query_4': SimpleDynamicQuery4Form(),
+            'form_query_5': SimpleDynamicQuery5Form(),
+            'form_query_6': SimpleDynamicQuery6Form(),
+            'form_query_7': SimpleDynamicQuery7Form(),
+        }
+    return render(request, 'cosmetics/management/simple_dynamic_query.html', context)
 
 
 def simple_queries(request):

@@ -18,6 +18,36 @@ class CategoryForm(forms.ModelForm):
     )
 
 
+class SimpleDynamicQuery1Form(forms.Form):
+    category_name = forms.CharField(label="Category Name")
+
+
+class SimpleDynamicQuery2Form(forms.Form):
+    manufacturer_name = forms.CharField(label="Manufacturer Name")
+
+
+class SimpleDynamicQuery3Form(forms.Form):
+    product_quantity = forms.IntegerField(label="Product Quantity")
+
+
+class SimpleDynamicQuery4Form(forms.Form):
+    start_date = forms.DateField(label="Start Date")
+    stop_date = forms.DateField(label="Stop Date")
+
+
+class SimpleDynamicQuery5Form(forms.Form):
+    new_category_name = forms.CharField(label="Category Name")
+
+
+class SimpleDynamicQuery6Form(forms.Form):
+    product_price = forms.IntegerField(label="Product Quantity")
+
+
+class SimpleDynamicQuery7Form(forms.Form):
+    filters = (("AW", "Awaiting"), ("PR", "Processing"), ("FI", "Finalized"))
+    status_order = forms.ChoiceField(label="Status Order", choices=filters)
+
+
 class OrderForm(forms.ModelForm):
     class Meta:
         model = Order
