@@ -527,7 +527,6 @@ def view_checkout(request):
         try:
             # Get object from database using Django syntax
             order = Order.objects.get(client=request.user, ordered=False)
-            print(order)
 
             context = {
                 'shipping_form': ShippingForm(),
@@ -693,11 +692,17 @@ def manage_subcategory(request):
             name = subcategory_form.cleaned_data["name"]
             category = subcategory_form.cleaned_data["category"]
 
-            # Create a new object to be inserted in database
-            model_subcategory = Subcategory(name=name, category=category)
+            # Insert object using Django syntax
+            # # Create a new object to be inserted in database
+            # model_subcategory = Subcategory(name=name, category=category)
+            #
+            # # Save the object in database with the above values
+            # model_subcategory.save()
 
-            # Save the object in database with the above values
-            model_subcategory.save()
+            # Insert object using SQL syntax
+            insert_query = "INSERT INTO cosmetics_subcategory(name, category_id) VALUES( %s, %s )"
+            with connection.cursor() as cursor:
+                cursor.execute(insert_query, [name, str(category.id)])
 
             # Get list of categories from database
             context['subcategories'] = Subcategory.objects.raw("SELECT * FROM cosmetics_subcategory")
@@ -769,11 +774,17 @@ def manage_manufacturer(request):
             # Get data from web interface
             name = manufacturer_form.cleaned_data["name"]
 
-            # Create a new object to be inserted in database
-            model_manufacturer = Manufacturer(name=name)
+            # Insert object using Django syntax
+            # # Create a new object to be inserted in database
+            # model_manufacturer = Manufacturer(name=name)
+            #
+            # # Save the object in database with the above values
+            # model_manufacturer.save()
 
-            # Save the object in database with the above values
-            model_manufacturer.save()
+            # Insert object using SQL syntax
+            insert_query = "INSERT INTO cosmetics_manufacturer(name) VALUES( %s )"
+            with connection.cursor() as cursor:
+                cursor.execute(insert_query, [name])
 
             # Get list of categories from database
             context['manufacturers'] = Manufacturer.objects.raw("SELECT * FROM cosmetics_manufacturer")
