@@ -64,6 +64,24 @@ class ComplexDynamicQuery4Form(forms.Form):
     category_name_query_4 = forms.CharField(label="Category Name")
 
 
+class MonthlyOrderForm(forms.Form):
+    filters = (
+        ("01", "January"),
+        ("02", "February"),
+        ("03", "March"),
+        ("04", "April"),
+        ("05", "May"),
+        ("06", "June"),
+        ("07", "July"),
+        ("08", "August"),
+        ("09", "September"),
+        ("10", "October"),
+        ("11", "November"),
+        ("12", "December"),
+    )
+    month = forms.ChoiceField(label="Month", choices=filters)
+
+
 class OrderForm(forms.ModelForm):
     class Meta:
         model = Order

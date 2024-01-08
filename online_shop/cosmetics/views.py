@@ -9,7 +9,7 @@ from .forms import CategoryForm, SubcategoryForm, ManufacturerForm, ProductForm,
     ShippingForm, SimpleDynamicQuery1Form, SimpleDynamicQuery2Form, SimpleDynamicQuery3Form, \
     SimpleDynamicQuery4Form, SimpleDynamicQuery5Form, SimpleDynamicQuery6Form, \
     SimpleDynamicQuery7Form, ComplexDynamicQuery1Form, ComplexDynamicQuery2Form, \
-    ComplexDynamicQuery3Form, ComplexDynamicQuery4Form
+    ComplexDynamicQuery3Form, ComplexDynamicQuery4Form, MonthlyOrderForm
 
 
 def home(request):
@@ -24,7 +24,65 @@ def categories(request):
     context = {
         'categories': Category.objects.raw("SELECT * FROM cosmetics_category"),
         'subcategories': Subcategory.objects.raw("SELECT * FROM cosmetics_subcategory"),
+        'manufacturers': Manufacturer.objects.raw("SELECT * FROM cosmetics_manufacturer"),
         'products': Product.objects.raw("SELECT * FROM cosmetics_product"),
+        'total_products': len(Product.objects.raw("SELECT * FROM cosmetics_product")),
+        'category_id': 1
+    }
+    return render(request, "cosmetics/categories.html", context)
+
+
+def products_from_category(request, id, sort):
+    products_query = """ SELECT * 
+    FROM cosmetics_product p 
+    JOIN cosmetics_category c ON p.category_id=c.id 
+    WHERE c.id=%s1
+    ORDER BY p.price %s2;
+    """
+    query = products_query.replace('%s1', str(id))
+    response = Product.objects.raw(query.replace('%s2', sort))
+
+    context = {
+        'categories': Category.objects.raw("SELECT * FROM cosmetics_category"),
+        'subcategories': Subcategory.objects.raw("SELECT * FROM cosmetics_subcategory"),
+        'manufacturers': Manufacturer.objects.raw("SELECT * FROM cosmetics_manufacturer"),
+        'products': response,
+        'total_products': len(response),
+        'category_id': id
+    }
+    return render(request, "cosmetics/categories.html", context)
+
+
+def products_from_subcategory(request, id):
+    products_query = """ SELECT * 
+                FROM cosmetics_product p 
+                JOIN cosmetics_subcategory s ON p.subcategory_id=s.id 
+                WHERE s.id=%s; """
+    response = Product.objects.raw(products_query.replace('%s', str(id)))
+    context = {
+        'categories': Category.objects.raw("SELECT * FROM cosmetics_category"),
+        'subcategories': Subcategory.objects.raw("SELECT * FROM cosmetics_subcategory"),
+        'manufacturers': Manufacturer.objects.raw("SELECT * FROM cosmetics_manufacturer"),
+        'products': response,
+        'total_products': len(response),
+        'category_id': id
+    }
+    return render(request, "cosmetics/categories.html", context)
+
+
+def products_from_manufacturer(request, id):
+    products_query = """ SELECT * 
+                FROM cosmetics_product p 
+                JOIN cosmetics_manufacturer m ON p.manufacturer_id=m.id 
+                WHERE m.id=%s; """
+    response = Product.objects.raw(products_query.replace('%s', str(id)))
+    context = {
+        'categories': Category.objects.raw("SELECT * FROM cosmetics_category"),
+        'subcategories': Subcategory.objects.raw("SELECT * FROM cosmetics_subcategory"),
+        'manufacturers': Manufacturer.objects.raw("SELECT * FROM cosmetics_manufacturer"),
+        'products': response,
+        'total_products': len(response),
+        'category_id': id
     }
     return render(request, "cosmetics/categories.html", context)
 
@@ -240,29 +298,29 @@ def simple_queries(request):
     query_1 = """ SELECT p.name, c.name 
     FROM cosmetics_product p 
     JOIN cosmetics_category c ON p.category_id=c.id 
-    WHERE c.name='Cat 1'; """
+    WHERE c.name='Make-up'; """
     query_2 = """ SELECT p.name, m.name 
     FROM cosmetics_product p 
     JOIN cosmetics_manufacturer m ON p.manufacturer_id=m.id 
-    WHERE m.name='TBD'; """
+    WHERE m.name='Bioderma'; """
     query_3 = """ SELECT p.name, p.quantity 
     FROM cosmetics_product p 
-    WHERE p.quantity < 2 ;"""
+    WHERE p.quantity < 100 ;"""
     query_4 = """ SELECT c.username, o.ordered_date 
     FROM cosmetics_order o 
     JOIN cosmetics_client c ON c.id=o.client_id 
-    WHERE o.ordered_date BETWEEN '2024-01-01' AND '2024-01-06';"""
+    WHERE o.ordered_date BETWEEN '2024-01-01' AND '2024-06-06';"""
     query_5 = """ SELECT s.name, c.name 
     FROM cosmetics_subcategory s 
     JOIN cosmetics_category c ON s.category_id=c.id 
-    WHERE c.name='Cat 1'; """
+    WHERE c.name='Skin-care'; """
     query_6 = """ SELECT p.name, p.price 
     FROM cosmetics_product p 
-    WHERE p.price < 18 ;"""
+    WHERE p.price < 100 ;"""
     query_7 = """ SELECT c.username, o.status
     FROM cosmetics_order o
     JOIN cosmetics_client c ON c.id=o.client_id 
-    WHERE o.status = 'AW' ;"""
+    WHERE o.status = 'FI' ;"""
     with connection.cursor() as cursor:
         cursor.execute(query_1)
         response_query_1 = cursor.fetchall()
@@ -949,6 +1007,82 @@ def update_product(request, id):
         'products': Product.objects.raw("SELECT * FROM cosmetics_product"),
     }
     return render(request, 'cosmetics/management/product.html', context)
+
+
+def statistics(request):
+    month_income = 0
+    vat_value = 0
+    total_orders = 0
+    if request.method == 'POST':
+        monthly_form = MonthlyOrderForm(request.POST)
+        if monthly_form.is_valid():
+            month = monthly_form.cleaned_data["month"]
+
+            orders_response_info = Order.objects.raw("SELECT * FROM cosmetics_order WHERE ordered_date BETWEEN '2024-%s-01' AND '2024-%s-30'".replace('%s', str(month)))
+            for order in orders_response_info:
+                month_income += order.get_total()
+            orders_query = """ SELECT o.status, c.username, o.ordered_date
+            FROM cosmetics_order o 
+            JOIN cosmetics_client c ON c.id=o.client_id
+            WHERE o.ordered_date BETWEEN '2024-%s-01' AND '2024-%s-30';"""
+
+            with connection.cursor() as cursor:
+                cursor.execute(orders_query.replace('%s', str(month)))
+                orders_response = cursor.fetchall()
+
+            all_orders = zip(orders_response, orders_response_info)
+
+            context = {
+                'monthly_form': monthly_form,
+                'total_orders': len(orders_response),
+                'all_orders': all_orders,
+                'month_income': month_income,
+                'vat': month_income*0.19,
+                'average_price_order': month_income/len(orders_response) if len(orders_response) > 0 else total_orders,
+                'category_form': ComplexDynamicQuery4Form(),
+            }
+
+            return render(request, 'cosmetics/statistics.html', context)
+
+        category_form = ComplexDynamicQuery4Form(request.POST)
+        if category_form.is_valid():
+            category_name = category_form.cleaned_data["category_name_query_4"]
+
+            products_query = """ SELECT p.name, cc.name, cs.name, cm.name, SUM(c.quantity) as total_comandat, p.price
+            FROM cosmetics_product p
+            JOIN cosmetics_cart c ON p.id=c.product_id
+            JOIN cosmetics_category cc on cc.id=p.category_id 
+            JOIN cosmetics_subcategory cs on cs.id=p.subcategory_id 
+            JOIN cosmetics_manufacturer cm on cm.id=p.manufacturer_id  	 
+            WHERE cc.name = %s
+            GROUP BY p.id
+            ORDER BY total_comandat DESC; """
+
+            with connection.cursor() as cursor:
+                cursor.execute(products_query, [category_name])
+                products_response = cursor.fetchall()
+
+            context = {
+                'monthly_form': MonthlyOrderForm(),
+                'total_orders': total_orders,
+                'month_income': month_income,
+                'vat': month_income*0.19,
+                'average_price_order': total_orders,
+                'category_form': category_form,
+                'products': products_response,
+            }
+
+            return render(request, 'cosmetics/statistics.html', context)
+
+    else:
+        context = {
+            'monthly_form': MonthlyOrderForm(),
+            'category_form': ComplexDynamicQuery4Form(),
+            'total_orders': total_orders,
+            'month_income': month_income,
+            'vat': vat_value
+        }
+    return render(request, 'cosmetics/statistics.html', context)
 
 
 def product_detail(request, id):

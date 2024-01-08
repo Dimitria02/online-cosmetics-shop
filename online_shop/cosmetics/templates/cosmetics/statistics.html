@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block title %}Statistics{% endblock %}
+{% block content %}
+{% load static %}
+<div class="container">
+
+    <!-- TOP SECTION-->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="row px-4 px-lg-5 py-lg-4 align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="h2 text-uppercase mb-0">Statistics cosmetics shop</h1>
+                </div>
+                <div class="col-lg-6 text-lg-end">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb justify-content-lg-end mb-0 px-0 bg-light">
+                            <li class="breadcrumb-item">
+                                <a class="text-dark" href="{% url 'home' %}">Home</a>
+                            </li>
+                            <li class="breadcrumb-item active" aria-current="page">
+                                <a href="{% url 'simple_queries' %}">Statistics</a>
+                            </li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- End of TOP SECTION-->
+
+    <section class="py-5">
+        <div class="card mb-4">
+            <div class="card-body">
+                <header class="text-center">
+                    <p class="small text-muted small text-uppercase mb-1">Afisarea detaliilor despre comenzile plasate intr-o anumita luna</p>
+                </header>
+                <div class="form-group">
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ monthly_form }}
+                        <button type="submit" class="btn btn-success">Send</button>
+                    </form>
+                </div>
+
+                <table class="table table-lg" cellspacing="0" width="100%">
+                    <thead>
+                        <tr>
+                            <th scope="col">Details</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Client</th>
+                            <th scope="col">Ordered Date</th>
+                            <th scope="col">Total Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sql_order, info_order in all_orders %}
+                            <tr>
+                                <td>
+                                    {% for item in info_order.carts.all %}
+                                        {{ item.product.name }} ({{ item.product.price }} RON) x {{ item.quantity }} <br>
+                                    {% endfor %}
+                                </td>
+                                <td>{{ sql_order.0 }}</td>
+                                <td>{{ sql_order.1 }}</td>
+                                <td>{{ sql_order.2|date:"Y-F-d" }}</td>
+                                <td>{{ info_order.get_total }} RON</td>
+                            </tr>
+                        {% endfor %}
+                        <tr>
+                            <td class="p-3 align-middle border-light">TOTAL</td>
+                            <td class="p-3 align-middle border-light"></td>
+                            <td class="p-3 align-middle border-light"></td>
+                            <td class="p-3 align-middle border-light"></td>
+                            <th class="ps-0 py-3 border-light">{{ month_income }} RON</th>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="row">
+                    <div class="col-md-3">
+                        <h6>Total Orders</h6>
+                        <span> {{total_orders}} </span>
+                    </div>
+                    <div class="col-md-3">
+                        <h6>Average price per order</h6>
+                        <span>{{average_price_order}} RON</span>
+                    </div>
+                    <div class="col-md-3">
+                        <h6>VAT value</h6>
+                        <span>{{ vat }} RON</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <header class="text-center">
+                    <p class="small text-muted small text-uppercase mb-1">Afisarea detaliilor despre produsele dintr-o anumita categorie</p>
+                </header>
+
+                <div class="form-group">
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ category_form }}
+                        <button type="submit" class="btn btn-success">Send</button>
+                    </form>
+                </div>
+
+                <table class="table table-lg" cellspacing="0" width="100%">
+                    <thead>
+                        <tr>
+                            <th scope="col">Name</th>
+                            <th scope="col">Category</th>
+                            <th scope="col">Subcategory</th>
+                            <th scope="col">Manufacturer</th>
+                            <th scope="col">Number of orders</th>
+                            <th scope="col">Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in products %}
+                            <tr>
+                                <td>{{ product.0 }}</td>
+                                <td>{{ product.1 }}</td>
+                                <td>{{ product.2 }}</td>
+                                <td>{{ product.3 }}</td>
+                                <td>{{ product.4 }}</td>
+                                <td>{{ product.5 }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
