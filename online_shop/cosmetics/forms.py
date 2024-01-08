@@ -48,6 +48,22 @@ class SimpleDynamicQuery7Form(forms.Form):
     status_order = forms.ChoiceField(label="Status Order", choices=filters)
 
 
+class ComplexDynamicQuery1Form(forms.Form):
+    client_username_query_1 = forms.CharField(label="Client Username")
+
+
+class ComplexDynamicQuery2Form(forms.Form):
+    product_quantity_query_2 = forms.IntegerField(label="Product Quantity")
+
+
+class ComplexDynamicQuery3Form(forms.Form):
+    category_name_query_3 = forms.CharField(label="Category Name")
+
+
+class ComplexDynamicQuery4Form(forms.Form):
+    category_name_query_4 = forms.CharField(label="Category Name")
+
+
 class OrderForm(forms.ModelForm):
     class Meta:
         model = Order
