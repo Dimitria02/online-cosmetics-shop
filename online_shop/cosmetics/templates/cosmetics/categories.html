@@ -71,63 +71,43 @@
                 <!-- SHOP SIDEBAR-->
                 <div class="col-lg-3 order-2 order-lg-1">
                     <h5 class="text-uppercase mb-4">Categories</h5>
-                    {% for subcategory in subcategories %}
-                        <div class="py-2 px-4 bg-dark text-white mb-3">
-                            <strong class="small text-uppercase fw-bold">{{ subcategory.category }}</strong>
+                    {% for category in categories %}
+                        <div class="py-2 px-4 bg-light mb-3">
+                            <strong class="small text-uppercase fw-bold">
+                                <a class="reset-anchor" href="{% url 'products_from_category' id=category.id sort='ASC' %}">{{ category.name }}</a>
+                            </strong>
                         </div>
-                        <ul class="list-unstyled small text-muted ps-lg-4 font-weight-normal">
-                            <li class="mb-2">
-                                <a class="reset-anchor" href="#">{{ subcategory.name }}</a>
-                            </li>
-                        </ul>
                     {% endfor %}
 
-                    <h6 class="text-uppercase mb-4">Price range</h6>
-                    <div class="price-range pt-4 mb-5">
-                        <div id="range"></div>
-                        <div class="row pt-2">
-                            <div class="col-6">
-                                <strong class="small fw-bold text-uppercase">From</strong>
-                            </div>
-                            <div class="col-6 text-end">
-                                <strong class="small fw-bold text-uppercase">To</strong>
-                            </div>
+                    <h5 class="text-uppercase mb-2">Subcategories</h5>
+                    {% for subcategory in subcategories %}
+                        <div class="py-2 px-4 bg-light mb-3">
+                            <strong class="small text-uppercase fw-bold">
+                                <a class="reset-anchor" href="{% url 'products_from_subcategory' subcategory.id %}">{{ subcategory.name }}</a>
+                            </strong>
                         </div>
-                    </div>
-                    <h6 class="text-uppercase mb-3">Filters</h6>
-                    <div class="form-check mb-1">
-                        <input class="form-check-input" type="checkbox" id="checkbox_1">
-                        <label class="form-check-label" for="checkbox_1">Returns Accepted</label>
-                    </div>
-                    <div class="form-check mb-1">
-                        <input class="form-check-input" type="checkbox" id="checkbox_2">
-                        <label class="form-check-label" for="checkbox_2">Returns Accepted</label>
-                    </div>
+                    {% endfor %}
+
+                    <h5 class="text-uppercase mb-2">Manufacturers</h5>
+                    {% for manufacturer in manufacturers %}
+                        <div class="py-2 px-4 bg-light mb-3">
+                            <strong class="small text-uppercase fw-bold">
+                                <a class="reset-anchor" href="{% url 'products_from_manufacturer' manufacturer.id %}">{{ manufacturer.name }}</a>
+                            </strong>
+                        </div>
+                    {% endfor %}
                 </div>
                 <!-- SHOP LISTING-->
                 <div class="col-lg-9 order-1 order-lg-2 mb-5 mb-lg-0">
                     <div class="row mb-3 align-items-center">
                         <div class="col-lg-6 mb-2 mb-lg-0">
-                            <p class="text-sm text-muted mb-0">Showing {{ products.count }} results</p>
+                            <p class="text-sm text-muted mb-0">Showing {{ total_products }} product(s)</p>
                         </div>
                         <div class="col-lg-6">
                             <ul class="list-inline d-flex align-items-center justify-content-lg-end mb-0">
-                                <li class="list-inline-item text-muted me-3">
-                                    <a class="reset-anchor p-0" href="#!">
-                                        <i class="fas fa-th-large"></i>
-                                    </a>
-                                </li>
-                                <li class="list-inline-item text-muted me-3">
-                                    <a class="reset-anchor p-0" href="#!">
-                                        <i class="fas fa-th"></i>
-                                    </a>
-                                </li>
-                                <li class="list-inline-item">
-                                    <select class="selectpicker" data-customclass="form-control form-control-sm">
-                                        <option value>Sort By</option>
-                                        <option value="low-high">Price: Low to High </option>
-                                        <option value="high-low">Price: High to Low </option>
-                                    </select>
+                                <li>
+                                    <a class="btn btn-light" class="reset-anchor" href="{% url 'products_from_category' id=category_id sort='ASC' %}">Low to High</a>
+                                    <a class="btn btn-light" class="reset-anchor" href="{% url 'products_from_category' id=category_id sort='DESC' %}">High to Low</a>
                                 </li>
                             </ul>
                         </div>
@@ -169,29 +149,4 @@
         </div>
     </section>
 </div>
-<script>
-    var range = document.getElementById('range');
-    noUiSlider.create(range, {
-        range: {
-            'min': 0,
-            'max': 2000
-        },
-        step: 5,
-        start: [100, 500],
-        margin: 300,
-        connect: true,
-        direction: 'ltr',
-        orientation: 'horizontal',
-        behaviour: 'tap-drag',
-        tooltips: true,
-        format: {
-            to: function(value) {
-                return value + ' RON';
-            },
-            from: function(value) {
-                return value.replace('', '');
-            }
-        }
-    });
-</script>
 {% endblock %}

@@ -47,7 +47,7 @@
 
 <div class="container">
     <!-- Discounts section -->
-    <section class="hero pb-3 bg-cover bg-center d-flex align-items-center" style="background: url({% static 'img/hero-banner-alt.jpg' %})">
+    <section class="hero pb-3 bg-cover bg-center d-flex align-items-center" style="background: url({% static 'img/Banner.jpeg' %})">
         <div class="container py-5">
             <div class="row px-4 px-lg-5">
                 <div class="col-lg-6">
@@ -57,7 +57,6 @@
                             new Date().getFullYear() >= 2023 && document.write("- " + new Date().getFullYear());
                         </script>
                     </p>
-                    <h1 class="h2 text-uppercase mb-3">20% off on new season</h1>
                     <a class="btn btn-dark" href="{% url 'categories' %}">Browse collections</a>
                 </div>
             </div>
@@ -97,7 +96,7 @@
                 <div class="product text-center">
                     <div class="position-relative mb-3">
                         <div class="badge text-white bg-"></div>
-                        <a class="d-block" href="detail.html">
+                        <a class="d-block" href="{% url 'product_detail'  product.id %}">
                             <img class="img-fluid w-100" src="{{ product.icon.url }}" alt="...">
                         </a>
                         <div class="product-overlay">
@@ -113,7 +112,7 @@
                             </ul>
                         </div>
                     </div>
-                    <h6> <a class="reset-anchor" href="detail.html">{{ product.name }}</a></h6>
+                    <h6> <a class="reset-anchor" href="{% url 'product_detail'  product.id %}">{{ product.name }}</a></h6>
                     <p class="small text-muted">{{ product.price }} RON</p>
                 </div>
             </div>

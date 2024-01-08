@@ -30,6 +30,9 @@ urlpatterns = [
     path('signup/', client_views.client_signup, name='client_signup'),
     path('profile/', cosmetics_views.user_profile, name='user_profile'),
     path('categories/', cosmetics_views.categories, name='categories'),
+    path('categories/<int:id>/<str:sort>/', cosmetics_views.products_from_category, name='products_from_category'),
+    path('subcategories/<int:id>/', cosmetics_views.products_from_subcategory, name='products_from_subcategory'),
+    path('manufacturers/<int:id>/', cosmetics_views.products_from_manufacturer, name='products_from_manufacturer'),
     path('cart/', cosmetics_views.view_cart, name='view_cart'),
     path('add/<int:id>/', cosmetics_views.add_to_cart, name='add_to_cart'),
     path('remove/<int:id>/', cosmetics_views.remove_from_cart, name='remove_from_cart'),
@@ -54,6 +57,7 @@ urlpatterns = [
     path('simple_queries/', cosmetics_views.simple_queries, name='simple_queries'),
     path('simple_dynamic_queries/', cosmetics_views.simple_dynamic_queries, name='simple_dynamic_queries'),
     path('complex_queries/', cosmetics_views.complex_queries, name='complex_queries'),
+    path('statistics/', cosmetics_views.statistics, name='statistics'),
 ]
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
