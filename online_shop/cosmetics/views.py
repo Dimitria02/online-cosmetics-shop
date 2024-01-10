@@ -8,8 +8,8 @@ from .models import Category, Subcategory, Manufacturer, Product, Order, Cart, C
 from .forms import CategoryForm, SubcategoryForm, ManufacturerForm, ProductForm, OrderForm, \
     ShippingForm, SimpleDynamicQuery1Form, SimpleDynamicQuery2Form, SimpleDynamicQuery3Form, \
     SimpleDynamicQuery4Form, SimpleDynamicQuery5Form, SimpleDynamicQuery6Form, \
-    SimpleDynamicQuery7Form, ComplexDynamicQuery1Form, ComplexDynamicQuery2Form, \
-    ComplexDynamicQuery3Form, ComplexDynamicQuery4Form, MonthlyOrderForm
+    SimpleDynamicQuery7Form, ComplexDynamicQueryForm, ComplexDynamicQuery1Form, \
+    MonthlyOrderForm
 
 
 def home(request):
@@ -358,115 +358,94 @@ def simple_queries(request):
 
 def complex_queries(request):
     if request.method == 'POST':
-        form_query_1 = ComplexDynamicQuery1Form(request.POST)
-        if form_query_1.is_valid():
-            client_username_query_1 = form_query_1.cleaned_data["client_username_query_1"]
+        form_complex_query_1 = ComplexDynamicQuery1Form(request.POST)
+        if form_complex_query_1.is_valid():
+            category_name = form_complex_query_1.cleaned_data["category_name"]
 
-            query_1 = """ SELECT c.username, COUNT(o.id) as numar_comenzi 
-            FROM cosmetics_client c 
-            JOIN cosmetics_order o ON c.id=o.client_id
-            WHERE c.username = %s
-            GROUP BY c.id 
-            ORDER BY numar_comenzi DESC; """
+            complex_query_1 = """ SELECT cl.username
+            FROM cosmetics_client cl
+            WHERE cl.id IN (
+                SELECT DISTINCT co.client_id
+                FROM cosmetics_order co
+                WHERE co.client_id NOT IN (
+                    SELECT DISTINCT co.client_id
+                    FROM cosmetics_order co
+                    JOIN cosmetics_cart ccart ON co.id = ccart.ordered
+                    JOIN cosmetics_product cp ON ccart.product_id = cp.id
+                    JOIN cosmetics_subcategory cs ON cp.subcategory_id = cs.id
+                    JOIN cosmetics_category cc ON cp.category_id = cc.id
+                    WHERE cc.name = %s
+                )
+                AND co.client_id IN (
+                    SELECT DISTINCT co.client_id
+                    FROM cosmetics_order co
+                    JOIN cosmetics_cart ccart ON co.id = ccart.ordered
+                    JOIN cosmetics_product cp ON ccart.product_id = cp.id
+                    JOIN cosmetics_subcategory cs ON cp.subcategory_id = cs.id
+                    GROUP BY co.client_id
+                    HAVING COUNT(DISTINCT cs.id) > 1
+                )
+            );"""
             with connection.cursor() as cursor:
-                cursor.execute(query_1, [client_username_query_1])
+                cursor.execute(complex_query_1, [category_name])
                 response_query_1 = cursor.fetchall()
 
+            print(response_query_1)
             # Create a success notification to be displayed on the page
             messages.success(request, f"Query has been executed! Result {response_query_1}")
             context = {
-                'form_complex_query_1': form_query_1,
-                'form_complex_query_2': ComplexDynamicQuery2Form(),
-                'form_complex_query_3': ComplexDynamicQuery3Form(),
-                'form_complex_query_4': ComplexDynamicQuery4Form(),
-                'query_1': query_1.replace('%s', client_username_query_1),
+                'form_complex_query_1': form_complex_query_1,
+                'complex_query_1': complex_query_1.replace('%s', category_name),
                 'response_query_1': response_query_1,
             }
             return render(request, 'cosmetics/management/complex_query.html', context)
 
-        form_query_2 = ComplexDynamicQuery2Form(request.POST)
-        if form_query_2.is_valid():
-            product_quantity_query_2 = form_query_2.cleaned_data["product_quantity_query_2"]
-
-            query_2 = """ SELECT cc.name, COUNT(*) AS numar_produse 
-            FROM cosmetics_category cc 
-            JOIN cosmetics_product cp ON cc.id=cp.category_id 
-            WHERE cp.quantity > %s
-            GROUP BY cc.id 
-            ORDER BY numar_produse DESC; """
-            with connection.cursor() as cursor:
-                cursor.execute(query_2, [int(product_quantity_query_2)])
-                response_query_2 = cursor.fetchall()
-
-            # Create a success notification to be displayed on the page
-            messages.success(request, f"Query has been executed! Result {response_query_2}")
-            context = {
-                'form_complex_query_1': ComplexDynamicQuery1Form(),
-                'form_complex_query_2': form_query_2,
-                'form_complex_query_3': ComplexDynamicQuery3Form(),
-                'form_complex_query_4': ComplexDynamicQuery4Form(),
-                'query_2': query_2.replace('%s', str(product_quantity_query_2)),
-                'response_query_2': response_query_2,
-            }
-            return render(request, 'cosmetics/management/complex_query.html', context)
-
-        form_query_3 = ComplexDynamicQuery3Form(request.POST)
-        if form_query_3.is_valid():
-            category_name_query_3 = form_query_3.cleaned_data["category_name_query_3"]
-
-            query_3 = """ SELECT c.name, AVG(p.price) as pret_mediu 
-            FROM cosmetics_category c 
-            JOIN cosmetics_product p ON c.id=p.category_id
-            WHERE c.name = %s
-            GROUP BY c.id; """
-            with connection.cursor() as cursor:
-                cursor.execute(query_3, [category_name_query_3])
-                response_query_3 = cursor.fetchall()
-
-            # Create a success notification to be displayed on the page
-            messages.success(request, f"Query has been executed! Result {response_query_3}")
-            context = {
-                'form_complex_query_1': ComplexDynamicQuery1Form(),
-                'form_complex_query_2': ComplexDynamicQuery2Form(),
-                'form_complex_query_3': form_query_3,
-                'form_complex_query_4': ComplexDynamicQuery4Form(),
-                'query_3': query_3.replace('%s', category_name_query_3),
-                'response_query_3': response_query_3,
-            }
-            return render(request, 'cosmetics/management/complex_query.html', context)
-
-        form_query_4 = ComplexDynamicQuery4Form(request.POST)
-        if form_query_4.is_valid():
-            category_name_query_4 = form_query_4.cleaned_data["category_name_query_4"]
-
-            query_4 = """ SELECT p.name, SUM(c.quantity) as total_comandat, cc.name
-            FROM cosmetics_product p
-            JOIN cosmetics_cart c ON p.id=c.product_id
-            JOIN cosmetics_category cc on cc.id=p.category_id 
-            WHERE cc.name = %s
-            GROUP BY p.id
-            ORDER BY total_comandat DESC; """
-            with connection.cursor() as cursor:
-                cursor.execute(query_4, [category_name_query_4])
-                response_query_4 = cursor.fetchall()
-
-            # Create a success notification to be displayed on the page
-            messages.success(request, f"Query has been executed! Result {response_query_4}")
-            context = {
-                'form_complex_query_1': ComplexDynamicQuery1Form(),
-                'form_complex_query_2': ComplexDynamicQuery2Form(),
-                'form_complex_query_3': ComplexDynamicQuery3Form(),
-                'form_complex_query_4': form_query_4,
-                'query_4': query_4.replace('%s', category_name_query_4),
-                'response_query_4': response_query_4,
-            }
-            return render(request, 'cosmetics/management/complex_query.html', context)
     else:
+
+        complex_query_2 = """ SELECT cp.name AS product_name, cc.name AS category_name, SUM(ccart.quantity) AS total_purchases
+        FROM cosmetics_cart ccart
+        JOIN cosmetics_product cp ON ccart.product_id = cp.id
+        JOIN cosmetics_category cc ON cp.category_id = cc.id
+        GROUP BY cp.name
+        HAVING SUM(ccart.quantity) = (
+            SELECT MAX(total_purchases)
+            FROM (
+                SELECT cp.category_id, cp.id AS product_id, SUM(ccart.quantity) AS total_purchases
+                FROM cosmetics_cart ccart
+                JOIN cosmetics_product cp ON ccart.product_id = cp.id
+                JOIN cosmetics_category cc ON cp.category_id = cc.id
+                GROUP BY cp.category_id, cp.id
+            ) AS category_product_purchases
+            WHERE category_product_purchases.category_id = cp.category_id
+        ); """
+
+        complex_query_3 = """ SELECT cl.username,
+        client_spending.total_spent_cat_1 AS total_spent_category_1,
+        client_spending.total_spent_cat_2 AS total_spent_category_2
+        FROM cosmetics_client cl
+        JOIN (
+            SELECT co.client_id,
+                SUM(CASE WHEN cp.category_id = 3 THEN ccart.quantity * cp.price ELSE 0 END) AS total_spent_cat_1,
+                SUM(CASE WHEN cp.category_id = 4 THEN ccart.quantity * cp.price ELSE 0 END) AS total_spent_cat_2
+            FROM cosmetics_order co
+            JOIN cosmetics_cart ccart ON co.id = ccart.ordered
+            JOIN cosmetics_product cp ON ccart.product_id = cp.id
+            GROUP BY co.client_id
+        ) AS client_spending ON cl.id = client_spending.client_id
+        WHERE client_spending.total_spent_cat_1 > client_spending.total_spent_cat_2;"""
+
+        with connection.cursor() as cursor:
+            cursor.execute(complex_query_2)
+            response_query_2 = cursor.fetchall()
+            cursor.execute(complex_query_3)
+            response_query_3 = cursor.fetchall()
+
         context = {
             'form_complex_query_1': ComplexDynamicQuery1Form(),
-            'form_complex_query_2': ComplexDynamicQuery2Form(),
-            'form_complex_query_3': ComplexDynamicQuery3Form(),
-            'form_complex_query_4': ComplexDynamicQuery4Form(),
+            'complex_query_2': complex_query_2,
+            'response_query_2': response_query_2,
+            'complex_query_3': complex_query_3,
+            'response_query_3': response_query_3,
         }
 
     return render(request, 'cosmetics/management/complex_query.html', context)
@@ -1039,14 +1018,15 @@ def statistics(request):
                 'month_income': month_income,
                 'vat': month_income*0.19,
                 'average_price_order': month_income/len(orders_response) if len(orders_response) > 0 else total_orders,
-                'category_form': ComplexDynamicQuery4Form(),
+                'category_form': ComplexDynamicQuery1Form(),
+                'complex_form': ComplexDynamicQueryForm(),
             }
 
             return render(request, 'cosmetics/statistics.html', context)
 
-        category_form = ComplexDynamicQuery4Form(request.POST)
+        category_form = ComplexDynamicQuery1Form(request.POST)
         if category_form.is_valid():
-            category_name = category_form.cleaned_data["category_name_query_4"]
+            category_name = category_form.cleaned_data["category_name"]
 
             products_query = """ SELECT p.name, cc.name, cs.name, cm.name, SUM(c.quantity) as total_comandat, p.price
             FROM cosmetics_product p
@@ -1064,6 +1044,7 @@ def statistics(request):
 
             context = {
                 'monthly_form': MonthlyOrderForm(),
+                'complex_form': ComplexDynamicQueryForm(),
                 'total_orders': total_orders,
                 'month_income': month_income,
                 'vat': month_income*0.19,
@@ -1074,10 +1055,46 @@ def statistics(request):
 
             return render(request, 'cosmetics/statistics.html', context)
 
+        complex_form = ComplexDynamicQueryForm(request.POST)
+        if complex_form.is_valid():
+            subcategory_name = complex_form.cleaned_data["subcategory_name"]
+
+            complex_query = """ SELECT cl.username, cp.name AS product_name, cp.price, ccart.quantity, co.ordered_date
+            FROM cosmetics_cart ccart
+            JOIN cosmetics_product cp ON ccart.product_id = cp.id
+            JOIN cosmetics_order co ON ccart.ordered = co.id
+            JOIN cosmetics_client cl ON co.client_id = cl.id
+            JOIN cosmetics_subcategory cs ON cp.subcategory_id = cs.id
+            JOIN (
+                SELECT cp.subcategory_id, MAX(cp.price) - MIN(cp.price) AS price_range
+                FROM cosmetics_product cp
+                GROUP BY cp.subcategory_id
+            ) AS subcategory_price_range ON cs.id = subcategory_price_range.subcategory_id
+            WHERE cs.name = %s
+            ORDER BY cl.last_name, cl.first_name, cp.name, co.ordered_date;"""
+
+            with connection.cursor() as cursor:
+                cursor.execute(complex_query, [subcategory_name])
+                complex_response = cursor.fetchall()
+
+            context = {
+                'monthly_form': MonthlyOrderForm(),
+                'total_orders': total_orders,
+                'month_income': month_income,
+                'vat': month_income*0.19,
+                'average_price_order': total_orders,
+                'category_form': ComplexDynamicQuery1Form(),
+                'complex_form': complex_form,
+                'complex_response': complex_response,
+            }
+
+            return render(request, 'cosmetics/statistics.html', context)
+
     else:
         context = {
             'monthly_form': MonthlyOrderForm(),
-            'category_form': ComplexDynamicQuery4Form(),
+            'category_form': ComplexDynamicQuery1Form(),
+            'complex_form': ComplexDynamicQueryForm(),
             'total_orders': total_orders,
             'month_income': month_income,
             'vat': vat_value
