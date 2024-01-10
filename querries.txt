@@ -1,0 +1,81 @@
+1. Produsele cele mai vandute din fiecare categorie
+
+SELECT  cc.name AS category_name, cp.name AS product_name, SUM(ccart.quantity) AS total_purchases
+FROM cosmetics_cart ccart
+JOIN cosmetics_product cp ON ccart.product_id = cp.id
+JOIN cosmetics_category cc ON cp.category_id = cc.id
+GROUP BY cp.name
+HAVING SUM(ccart.quantity) = (
+    SELECT MAX(total_purchases)
+    FROM (
+        SELECT cp.category_id, cp.id AS product_id, SUM(ccart.quantity) AS total_purchases
+        FROM cosmetics_cart ccart
+        JOIN cosmetics_product cp ON ccart.product_id = cp.id
+        JOIN cosmetics_category cc ON cp.category_id = cc.id
+        GROUP BY cp.category_id, cp.id
+    ) AS category_product_purchases
+    WHERE category_product_purchases.category_id = cp.category_id
+);
+
+2. Detaliile achizitiilor efectuate de clienti in cadrul unei anumite subcategorii de produse
+
+SELECT cl.first_name, cl.last_name, cp.name AS product_name, cp.price, ccart.quantity, co.ordered_date
+FROM cosmetics_cart ccart
+JOIN cosmetics_product cp ON ccart.product_id = cp.id
+JOIN cosmetics_order co ON ccart.ordered = co.id
+JOIN cosmetics_client cl ON co.client_id = cl.id
+JOIN cosmetics_subcategory cs ON cp.subcategory_id = cs.id
+JOIN (
+    SELECT cp.subcategory_id, MAX(cp.price) - MIN(cp.price) AS price_range
+    FROM cosmetics_product cp
+    GROUP BY cp.subcategory_id
+) AS subcategory_price_range ON cs.id = subcategory_price_range.subcategory_id
+WHERE cs.name = :subcategory_name
+ORDER BY cl.last_name, cl.first_name, cp.name, co.ordered_date;
+
+unde scrie :subcategory_name, pui in locul ei textul de la buton
+
+3. Identificarea clientilor care au cumparat produse din mai multe subcategorii, dar nu dintr-o categorie anume
+
+SELECT cl.first_name, cl.last_name
+FROM cosmetics_client cl
+WHERE cl.id IN (
+    SELECT DISTINCT co.client_id
+    FROM cosmetics_order co
+    WHERE co.client_id NOT IN (
+        SELECT DISTINCT co.client_id
+        FROM cosmetics_order co
+        JOIN cosmetics_cart ccart ON co.id = ccart.ordered
+        JOIN cosmetics_product cp ON ccart.product_id = cp.id
+        JOIN cosmetics_subcategory cs ON cp.subcategory_id = cs.id
+        JOIN cosmetics_category cc ON cp.category_id = cc.id
+        WHERE cc.name = 'Nume_Categorie_Exclusa'
+    )
+    AND co.client_id IN (
+        SELECT DISTINCT co.client_id
+        FROM cosmetics_order co
+        JOIN cosmetics_cart ccart ON co.id = ccart.ordered
+        JOIN cosmetics_product cp ON ccart.product_id = cp.id
+        JOIN cosmetics_subcategory cs ON cp.subcategory_id = cs.id
+        GROUP BY co.client_id
+        HAVING COUNT(DISTINCT cs.id) > 1
+    )
+);
+
+Aici la 'Nume_Categorie_Exclusa' pui tu o categorie din care sa nu faca parte ala, si o treci si in cerinta "sa nu faca parte din categoria..."
+
+SELECT cl.first_name, cl.last_name,
+    client_spending.total_spent_cat_1 AS total_spent_category_1,
+    client_spending.total_spent_cat_2 AS total_spent_category_2
+FROM cosmetics_client cl
+JOIN (
+    SELECT co.client_id,
+        SUM(CASE WHEN cp.category_id = 'ID_Categorie_1' THEN ccart.quantity * cp.price ELSE 0 END) AS total_spent_cat_1,
+        SUM(CASE WHEN cp.category_id = 'ID_Categorie_2' THEN ccart.quantity * cp.price ELSE 0 END) AS total_spent_cat_2
+    FROM cosmetics_order co
+    JOIN cosmetics_cart ccart ON co.id = ccart.ordered
+    JOIN cosmetics_product cp ON ccart.product_id = cp.id
+    GROUP BY co.client_id
+) AS client_spending ON cl.id = client_spending.client_id
+WHERE client_spending.total_spent_cat_1 > client_spending.total_spent_cat_2;
+
