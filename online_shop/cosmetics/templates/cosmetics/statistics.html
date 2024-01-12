@@ -133,6 +133,46 @@
 
             </div>
         </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <header class="text-center">
+                    <p class="small text-muted small text-uppercase mb-1">Afisarea detaliilor achizitiilor efectuate de clienti in cadrul unei anumite subcategorii de produse</p>
+                </header>
+
+                <div class="form-group">
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ complex_form }}
+                        <button type="submit" class="btn btn-success">Send</button>
+                    </form>
+                </div>
+
+                <table class="table table-lg" cellspacing="0" width="100%">
+                    <thead>
+                        <tr>
+                            <th scope="col">User</th>
+                            <th scope="col">Product</th>
+                            <th scope="col">Price</th>
+                            <th scope="col">Quantity</th>
+                            <th scope="col">Ordered Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in complex_response %}
+                            <tr>
+                                <td>{{ item.0 }}</td>
+                                <td>{{ item.1 }}</td>
+                                <td>{{ item.2 }}</td>
+                                <td>{{ item.3 }}</td>
+                                <td>{{ item.4|date:"Y-M-d" }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
     </section>
 </div>
 {% endblock %}

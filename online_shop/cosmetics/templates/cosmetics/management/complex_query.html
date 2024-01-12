@@ -35,7 +35,7 @@
     <section class="py-5">
         <div class="card mb-4">
             <div class="card-body">
-                <p>1. Afisarea numarului total de comenzi al unui anumit client</p>
+                <p>1. Afisarea clientilor care au cumparat produse din mai multe subcategorii, dar nu dintr-o categorie anume</p>
                 <div class="form-group">
                     <form class="form-horizontal form-material" method="post">
                         {% csrf_token %}
@@ -44,70 +44,38 @@
                     </form>
                 </div>
 
-                <p>Following query will be executed : <br> <b>{{ query_1 }}</b></p>
+                <p>Following query will be executed : <br> <b>{{ complex_query_1 }}</b></p>
                 <p>Results : </p>
                 {% for item in response_query_1 %}
-                    <p>User : <b>{{ item.0 }}</b> has made <b>{{ item.1 }}</b> order(s)</p>
+                    <p>User : <b>{{ item.0 }}</b> has not been ordered from provided category</p>
                 {% endfor %}
             </div>
         </div>
 
         <div class="card mb-4">
             <div class="card-body">
-                <p>2. Afisarea categoriilor care au mai mult de un anumit numar de produse</p>
-                <div class="form-group">
-                    <form class="form-horizontal form-material" method="post">
-                        {% csrf_token %}
-                        {{ form_complex_query_2 }}
-                        <button type="submit" class="btn btn-success">Send</button>
-                    </form>
-                </div>
+                <p>2. Afisarea celor mai vandute produse din fiecare categorie</p>
 
-                <p>Following query will be executed : <br> <b>{{ query_2 }}</b></p>
+                <p>Following query will be executed : <br> <b>{{ complex_query_2 }}</b></p>
                 <p>Results : </p>
                 {% for item in response_query_2 %}
-                    <p>Category : <b>{{ item.0 }}</b> has <b>{{ item.1 }}</b> product(s)</p>
+                    <p>Product : <b>{{ item.0 }}</b> from category : <b>{{ item.1 }}</b> has been ordered for : <b>{{ item.1 }}</b> time(s)</p>
                 {% endfor %}
             </div>
         </div>
 
         <div class="card mb-4">
             <div class="card-body">
-                <p>3. Afisarea pretului mediu al comenzilor apartinand unei anumite categorii</p>
-                <div class="form-group">
-                    <form class="form-horizontal form-material" method="post">
-                        {% csrf_token %}
-                        {{ form_complex_query_3 }}
-                        <button type="submit" class="btn btn-success">Send</button>
-                    </form>
-                </div>
+                <p>3. Afisarea </p>
 
-                <p>Following query will be executed : <br> <b>{{ query_3 }}</b></p>
+                <p>Following query will be executed : <br> <b>{{ complex_query_3 }}</b></p>
                 <p>Results : </p>
                 {% for item in response_query_3 %}
-                    <p>Results : Category : <b>{{ item.0 }}</b> has an average price <b>{{ item.1|floatformat:2 }}</b> RON</p>
+                    <p>Client : <b>{{ item.0 }}</b> spent <b>{{ item.1|floatformat:2 }}</b> RON and <b>{{ item.2|floatformat:2 }} RON</b></p>
                 {% endfor %}
             </div>
         </div>
 
-        <div class="card mb-4">
-            <div class="card-body">
-                <p>4. Afisarea produselor cel mai des comandate dintr-o anumita categorie</p>
-                <div class="form-group">
-                    <form class="form-horizontal form-material" method="post">
-                        {% csrf_token %}
-                        {{ form_complex_query_4 }}
-                        <button type="submit" class="btn btn-success">Send</button>
-                    </form>
-                </div>
-
-                <p>Following query will be executed : <br> <b>{{ query_4 }}</b></p>
-                <p>Results : </p>
-                {% for item in response_query_4 %}
-                    <p>Product : <b>{{ item.0 }}</b> has been ordered for : <b>{{ item.1 }}</b> time(s) and belongs to Category : <b>{{ item.2 }}</b></p>
-                {% endfor %}
-            </div>
-        </div>
     </section>
 </div>
 {% endblock %}
