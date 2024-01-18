@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'crispy_bootstrap5',
     'cosmetics',
     'client',
+    'dbbackup',
 ]
 
 MIDDLEWARE = [
@@ -154,3 +155,7 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 # Overwriting authorization model using a customized one
 AUTH_USER_MODEL = 'cosmetics.Client'
+
+# DB Backup properties
+DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
+DBBACKUP_STORAGE_OPTIONS = {'location': os.path.join(BASE_DIR, 'cosmetics', 'backup')}
